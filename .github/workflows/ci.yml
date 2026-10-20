@@ -1,0 +1,48 @@
+name: Verificar base Windows
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Instalar dependências da interface
+        run: npm ci
+      - name: Verificar tipos e componentes
+        run: npm run check
+      - name: Testar interface (unidade + componentes) com cobertura mínima
+        run: npm run test:coverage
+      - name: Compilar interface
+        run: npm run build
+      - name: Instalar navegador dos testes ponta a ponta
+        run: npx playwright install --with-deps chromium
+      - name: Testes ponta a ponta (Monaco real)
+        run: npm run test:e2e
+      - name: Preparar Rust estável
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Conferir formatação Rust
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
+      - name: Clippy sem avisos novos
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml --lib --tests
+      - name: Testar biblioteca Rust
+        run: cargo test --manifest-path src-tauri/Cargo.toml --lib
+      - name: Conferir executável nativo
+        run: cargo check --manifest-path src-tauri/Cargo.toml --bins
