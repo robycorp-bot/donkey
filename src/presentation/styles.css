@@ -504,6 +504,8 @@ kbd {
   background: #ffffff0c;
   color: #d5d9e4;
 }
+.close-active-tab { align-self: flex-start; margin: 1px 4px 0 2px; color: #9298a8; }
+.close-active-tab:hover:not(:disabled) { color: #f0a3ad; background: #ffffff0d; }
 .save-button {
   align-self: flex-start;
 }

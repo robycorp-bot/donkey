@@ -479,6 +479,9 @@
       dialog = 'discard';
     } else action();
   }
+  function closeActiveTab() {
+    if (activeTab && !showHome) closeTab(activeTab.path);
+  }
   async function configure() {
     if (configBusy) return;
     const id = settingProvider;
@@ -540,6 +543,11 @@
     if (event.key.toLowerCase() === 's') {
       event.preventDefault();
       void saveActive();
+    }
+    if (event.key.toLowerCase() === 'w') {
+      event.preventDefault();
+      closeActiveTab();
+      return;
     }
     if (event.key.toLowerCase() === 'o') {
       event.preventDefault();
@@ -929,6 +937,7 @@
             >
               <button
                 class="editor-tab"
+                on:auxclick={(event) => event.button === 1 && closeTab(tab.path)}
                 on:click={() => {
                   activePath = tab.path;
                   showHome = false;
@@ -940,10 +949,17 @@
               ><button
                 class="tab-close"
                 on:click={() => closeTab(tab.path)}
-                aria-label={`Fechar ${tab.name}`}><Icon name="close" size={12} /></button
+                aria-label={`Fechar ${tab.name}`}
+                title={`Fechar ${tab.name}`}><Icon name="close" size={12} /></button
               >
             </div>{/each}
         </div>
+        <button
+          class="icon-button close-active-tab"
+          on:click={closeActiveTab}
+          disabled={!activeTab || showHome}
+          aria-label="Fechar aba ativa"
+          title="Fechar aba ativa · Ctrl W"><Icon name="close" size={14} /></button>
         {#if activeTab && !showHome}<button
             class="format-button"
             class:off={!canFormat(activeTab.path, activeTab.language)}

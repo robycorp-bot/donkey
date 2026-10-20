@@ -91,6 +91,15 @@ describe('App · casca do editor', () => {
     expect(screen.queryByRole('button', { name: 'Fechar README.md' })).toBeNull();
   });
 
+  it('fecha a aba ativa com Ctrl W e oferece um botão visível de fechar', async () => {
+    const user = await openExample();
+    await openFile(user, 'README.md');
+    expect(screen.getByRole('button', { name: 'Fechar aba ativa' })).toBeTruthy();
+    await user.keyboard('{Control>}w{/Control}');
+    expect(screen.queryByRole('button', { name: 'Fechar README.md' })).toBeNull();
+    expect(screen.getByRole('button', { name: /Central IA/ })).toBeTruthy();
+  });
+
   it('atalhos: Ctrl+B lateral, Ctrl+` terminal, Ctrl+K comandos, Esc fecha', async () => {
     const user = await openExample();
     await user.keyboard('{Control>}b{/Control}');
