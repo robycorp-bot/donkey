@@ -63,6 +63,8 @@
       ? `US$ ${hit.inputPerMillion.toFixed(2)} entrada · ${hit.outputPerMillion.toFixed(2)} saída / 1M`
       : 'preço desconhecido';
   })();
+  $: freeProviders = PROVIDERS.filter((item) => item.id === 'minhavida' || item.id === 'openrouter');
+  $: paidProviders = PROVIDERS.filter((item) => !freeProviders.some((free) => free.id === item.id));
   $: conversationCost = messages.reduce((sum, m) => sum + (m.meta?.costUsd ?? 0), 0);
   $: conversationTokens = messages.reduce(
     (sum, m) => sum + (m.meta ? m.meta.inputTokens + m.meta.outputTokens : 0),
@@ -129,20 +131,24 @@
 
 <div class="aic">
   <header class="aic-head">
-    <div class="aic-providers" role="tablist" aria-label="Provedores de IA">
-      {#each PROVIDERS as item}<button
+    <details class="aic-provider-picker">
+      <summary aria-label="Escolher grupo e provedor"><span class="aic-picker-kicker">I.A</span><strong>{provider.name}</strong><span class="aic-picker-chevron">⌄</span></summary>
+      <div class="aic-provider-menu" role="tablist" aria-label="Provedores de IA">
+        <div class="aic-provider-group"><span>BOLSA I.A</span>{#each freeProviders as item}<button
           role="tab"
           aria-selected={id === item.id}
           class:on={id === item.id}
           class:free={item.id === 'minhavida'}
           on:click={() => selectedProvider.set(item.id)}
-          >{#if item.id === 'minhavida'}<span class="aic-heart">♥</span>{/if}{item.name}<span
-            class="aic-dot"
-            class:ok={$providerStatus[item.id]?.configured}
-            class:off={!item.supported}
-          ></span></button
-        >{/each}
-    </div>
+          >{#if item.id === 'minhavida'}<span class="aic-heart">♥</span>{/if}{item.name}<span class="aic-dot" class:ok={$providerStatus[item.id]?.configured} class:off={!item.supported}></span></button>{/each}</div>
+        <div class="aic-provider-group"><span>Grau 33 Iluminate</span>{#each paidProviders as item}<button
+          role="tab"
+          aria-selected={id === item.id}
+          class:on={id === item.id}
+          on:click={() => selectedProvider.set(item.id)}
+          >{item.name}<span class="aic-dot" class:ok={$providerStatus[item.id]?.configured} class:off={!item.supported}></span></button>{/each}</div>
+      </div>
+    </details>
     <div class="aic-model">
       <span class="aic-label">Modelo</span>
       {#if id === 'minhavida'}<select

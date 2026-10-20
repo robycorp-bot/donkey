@@ -693,6 +693,7 @@
         size={11}
       /></button
     >
+    <span class="rollback-mystery" title="O próximo capítulo ainda não foi revelado">O grande rollback...</span>
     {#if workspace && !gateway.isPreview}
       <div class="git-strip" class:busy={$gitBusy}>
         {#if $gitState?.repository}

@@ -1,4 +1,4 @@
-export type ProviderId = 'minhavida' | 'openrouter' | 'openai' | 'anthropic' | 'copilot';
+export type ProviderId = 'minhavida' | 'openrouter' | 'openai' | 'anthropic' | 'copilot' | 'grok';
 
 export interface FileEntry {
   name: string;

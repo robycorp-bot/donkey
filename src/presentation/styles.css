@@ -78,11 +78,24 @@ kbd {
   color: var(--muted);
 }
 .app-shell {
+  position: relative;
+  isolation: isolate;
   height: 100dvh;
   min-height: 580px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+.app-shell::before {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  inset: 48px 0 0;
+  pointer-events: none;
+  background: url('/burrinho-tech.png') 50% 58% / min(58vw, 820px) auto no-repeat;
+  opacity: .065;
+  filter: saturate(.8) contrast(1.05);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 18%, #000 82%, transparent 100%);
 }
 .topbar {
   height: 70px;
@@ -2073,6 +2086,20 @@ select.model-input {
   display: flex;
   flex-direction: column;
 }
+.aic-provider-picker { position: relative; flex: 0 0 auto; z-index: 4; }
+.rollback-mystery { color: #8e91ab; font-size: 11px; letter-spacing: .12em; opacity: .7; white-space: nowrap; }
+.aic-provider-picker summary { list-style: none; display: flex; align-items: center; gap: 9px; min-width: 190px; padding: 9px 12px; border: 1px solid #ffffff12; border-radius: 12px; background: #161820d9; cursor: pointer; color: #e8eaf2; }
+.aic-provider-picker summary::-webkit-details-marker { display: none; }
+.aic-picker-kicker { color: #9e9bbd; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
+.aic-picker-chevron { margin-left: auto; color: #8f96a9; transition: transform .15s ease; }
+.aic-provider-picker[open] .aic-picker-chevron { transform: rotate(180deg); }
+.aic-provider-menu { position: absolute; top: calc(100% + 8px); left: 0; width: 270px; padding: 8px; border: 1px solid #ffffff18; border-radius: 14px; background: #171921f2; box-shadow: 0 18px 50px #0008; backdrop-filter: blur(18px); }
+.aic-provider-group { padding: 6px 4px; }
+.aic-provider-group + .aic-provider-group { border-top: 1px solid #ffffff0c; }
+.aic-provider-group > span { display: block; padding: 4px 8px 6px; color: #858ba0; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.aic-provider-group button { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 8px; color: #b5bac9; text-align: left; }
+.aic-provider-group button:hover, .aic-provider-group button.on { color: #fff; background: linear-gradient(135deg, #5479c4cc, #7a5bc4cc); }
+.aic-provider-group button .aic-dot { margin-left: auto; }
 .aic-head {
   display: flex;
   flex-wrap: wrap;

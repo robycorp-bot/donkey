@@ -79,6 +79,18 @@ export const PROVIDERS: ProviderDefinition[] = [
       'Integração pendente do SDK oficial e do fluxo de autenticação do GitHub Copilot.',
     documentationUrl: 'https://github.com/github/copilot-sdk',
   },
+  {
+    id: 'grok',
+    name: 'Grok',
+    label: 'Grok',
+    shortName: 'Gx',
+    description: 'Espaço reservado para a integração dos modelos Grok da xAI.',
+    defaultModel: 'grok-3-mini',
+    suggestedModels: ['grok-3-mini', 'grok-3'],
+    supported: false,
+    configurationHint: 'A integração da xAI será habilitada quando o conector oficial estiver pronto.',
+    documentationUrl: 'https://docs.x.ai/',
+  },
 ];
 
 export const providers = PROVIDERS;
