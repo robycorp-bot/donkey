@@ -97,6 +97,7 @@ kbd {
   filter: saturate(.8) contrast(1.05);
   mask-image: linear-gradient(to bottom, transparent 0%, #000 18%, #000 82%, transparent 100%);
 }
+.donkey-mark { object-fit: cover; object-position: 50% 16%; border-radius: 22%; filter: drop-shadow(0 2px 5px #0006); }
 .topbar {
   height: 70px;
   padding: 0 23px;
