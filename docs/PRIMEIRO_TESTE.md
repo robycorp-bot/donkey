@@ -8,6 +8,16 @@ Para editar arquivos e usar o servidor HTML, o WebView2 do Windows é suficiente
 
 O projeto é pessoal. O código não é publicado nem enviado ao GitHub automaticamente. Configure o repositório como privado no próprio GitHub; a aplicação não altera sua visibilidade.
 
+## Reinstalar depois de uma atualização
+
+Depois de alterar o código, execute na raiz:
+
+```powershell
+.\scripts\reinstall.ps1
+```
+
+O fluxo roda o build de produção, fecha a cópia aberta, desinstala a versão registrada no Windows, instala o instalador mais recente e abre o aplicativo. Para apenas reinstalar o último instalador sem compilar, use `.\scripts\reinstall.ps1 -SkipBuild`; para deixar o aplicativo fechado, acrescente `-NoLaunch`.
+
 ## Abrir um projeto
 
 Clique no nome do projeto no topo ou no botão de pasta em **Projetos**. Selecione a pasta raiz. Navegue, abra um arquivo e salve com **Ctrl S**. O editor preserva alterações em abas e detecta conflitos com mudanças feitas por outro editor.

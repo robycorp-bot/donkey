@@ -12,6 +12,7 @@
     "preview": "vite preview --host 127.0.0.1 --port 1420",
     "desktop:dev": "tauri dev",
     "desktop:build": "tauri build",
+    "desktop:reinstall": "powershell -ExecutionPolicy Bypass -File scripts/reinstall.ps1",
     "tauri": "tauri",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
