@@ -69,4 +69,12 @@ O workflow de CI verifica a interface e o código Rust no Windows. Ele não publ
 - [Validação e pendências](docs/VALIDACAO.md)
 - [Histórico de versões](CHANGELOG.md)
 
+## Governança de IA
+
+- [`CLAUDE.md`](CLAUDE.md): visão da organização virtual (Software Factory).
+- [`AGENTS.md`](AGENTS.md): guia operacional para qualquer agente.
+- [`personas/`](personas/README.md): um `.md` por agente (papel, limites, exemplos).
+- [`mcp/`](mcp/README.md): orientação para MCP, com exemplo de deploy no Hostinger Single Web.
+- [`factory/`](factory/): pipeline AutoGen (`config/agents.yaml`).
+
 O projeto é destinado ao uso pessoal descrito no contexto. Esta entrega não atribui uma licença de distribuição ao projeto.

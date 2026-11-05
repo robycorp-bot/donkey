@@ -11,5 +11,8 @@ src-tauri/gen/
 .vscode/
 artifacts/
 coverage/
+__pycache__/
+.pytest_cache/
+.venv/
 test-results/
 playwright-report/
