@@ -699,7 +699,7 @@ Onde o humano atua como executivo e arquiteto de negócio, enquanto os agentes e
   - Performance
   - Integridade
   - Ser leve
- - Ele pode ser um FORK do Visual Studio Code, assim como o Cursor, porem com um diferencial importante, ele tem suas ias nativas, integre o ollama nele. Caso precisar tenho possibilidade de ter uma VPS e hospedagem para as coisas e apis desse app. Mas objetivo central e que nao quero usar o vs code nem o cursor, quero minha ferramenta de i.a, aonde eu consiga trabalhar com meus clis alis, modelos que eu quiser, claro que ele pode ter integracao com o claude, codex, glok, google, mas ele precisa no core dele ter as integracoes com as ias locais e gratuitas. Com aquela modelo de agente balanciado. 
+ - (Decisão 2026-11-05, ADR-005: NÃO fazer fork; seguir no Tauri por leveza.) Ideia original: ele pode ser um FORK do Visual Studio Code, assim como o Cursor, porem com um diferencial importante, ele tem suas ias nativas, integre o ollama nele. Caso precisar tenho possibilidade de ter uma VPS e hospedagem para as coisas e apis desse app. Mas objetivo central e que nao quero usar o vs code nem o cursor, quero minha ferramenta de i.a, aonde eu consiga trabalhar com meus clis alis, modelos que eu quiser, claro que ele pode ter integracao com o claude, codex, glok, google, mas ele precisa no core dele ter as integracoes com as ias locais e gratuitas. Com aquela modelo de agente balanciado. 
 
  ## Nucleo
   - As vezes nos queremos trabalhar de forma multi agenciada dentro da plataforma com varios modelos no mesmo projeto. entao por isso e legal, ele e uma ferramenta honesta que sabe indicar e trabalhar com aquilo que e gratuito e o que e pago.

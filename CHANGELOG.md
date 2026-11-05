@@ -4,6 +4,10 @@ O projeto usa versões `MAJOR.MINOR.PATCH`. Durante `0.x`, os contratos e format
 
 ## Não lançado
 
+- Visual redesenhado no estilo Google (Material): tema escuro por padrão e claro por botão, barra lateral de ícones (Agentes, Arquivos, Git, Terminal), barra superior com busca de comandos e botão Executar, janela opaca (sem Mica) e controles de janela do Windows. Os gastos de IA saíram do centro da tela: ficam num painel que abre pela barra de status. Removidos o visual "terminal antigo", o burrinho e os textos de brincadeira dos menus.
+- Blend de agentes (aba Agentes → Blend): Arquiteto, Desenvolvedor e Revisor em sequência, cada um com seu provedor e modelo, com sugestão automática (local e gratuito para escrever, modelo forte para planejar e revisar) e modo "só gratuito" que bloqueia qualquer etapa paga. O custo de cada etapa entra no monitor de gastos.
+- Novos provedores: Google Gemini, Grok (xAI) e Ollama local (sem chave, sem custo, só em 127.0.0.1). Nomes simplificados: Gratuitos, OpenRouter, Codex, Claude.
+- Decisão: continuar no Tauri, sem fork do VS Code, por leveza (ADR-005).
 - TDD em todas as camadas (ver `docs/TESTES.md`): 141 testes de interface (regras, stores, componentes, App em modo navegador e instalado), 44 testes Rust e 5 testes ponta a ponta com Monaco real. Cobertura mínima de 85% exigida no CI, mais clippy e e2e.
 - Corrigido: o terminal e a Central de IA podiam ficar travados em "executando" se a rolagem automática falhasse.
 - Removido o modal de Git antigo (`GitPanel.svelte`), substituído pelo painel lateral.

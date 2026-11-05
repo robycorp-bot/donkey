@@ -27,6 +27,13 @@
     save: 'M4 3h13l3 3v15H4V3Zm4 0v6h8V3M8 21v-8h8v8',
     coffee: 'M4 8h13v9l-3 3H7l-3-3V8Zm13 0h2a3 3 0 0 1 0 6h-2M7 2v3m4-3v3m4-3v3',
     monitor: 'M3 3h18v13H3V3Zm5 18h8m-4-5v5',
+    play: 'M7 4v16l13-8L7 4Z',
+    sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm0-6v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5',
+    moon: 'M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z',
+    minimize: 'M5 12h14',
+    maximize: 'M5 5h14v14H5V5Z',
+    agents: 'M12 3v4m0 10v4M3 12h4m10 0h4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z',
+    wallet: 'M3 7h16v12H3V7Zm0 0V5h13M15 13h4',
   };
 </script>
 

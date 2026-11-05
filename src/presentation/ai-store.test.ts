@@ -135,7 +135,7 @@ describe('ai-store · envio', () => {
     expect(gateway.chat).not.toHaveBeenCalled();
   });
 
-  it('o limite diário bloqueia modelos pagos, mas não o Modal minha vida', async () => {
+  it('o limite diário bloqueia modelos pagos, mas não o Gratuitos', async () => {
     const store = await fresh();
     await configured(store);
     store.dailyBudget.set(1);

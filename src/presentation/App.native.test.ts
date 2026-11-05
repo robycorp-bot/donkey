@@ -79,7 +79,7 @@ beforeEach(() => {
 async function boot() {
   const user = userEvent.setup();
   render(App);
-  await screen.findByText('main', { selector: '.git-chip span' });
+  await screen.findByText('main', { selector: '.status-item' });
   return user;
 }
 
@@ -95,22 +95,24 @@ describe('App · modo instalado', () => {
 
   it('Pull, Push e Sincronizar chamam o Git', async () => {
     const user = await boot();
-    await user.click(screen.getByRole('button', { name: '↓ Pull' }));
-    await user.click(screen.getByRole('button', { name: '↑ Push' }));
-    await user.click(screen.getByTitle('Sincronizar: pull e depois push'));
+    await user.click(screen.getByRole('button', { name: 'Controle de versão' }));
+    await user.click(screen.getByRole('button', { name: /Pull/ }));
+    await user.click(screen.getByRole('button', { name: /Push/ }));
+    await user.click(screen.getByRole('button', { name: 'Sincronizar' }));
     await waitFor(() => expect(tools.gitAction.mock.calls.map((c) => c[0])).toEqual(['pull', 'push', 'sync']));
   });
 
   it('sem remoto os botões de envio ficam desativados', async () => {
     tools.gitStatus.mockResolvedValue(gitFixture({ remote: false }));
-    await boot();
-    expect((screen.getByRole('button', { name: '↑ Push' }) as HTMLButtonElement).disabled).toBe(true);
+    const user = await boot();
+    await user.click(screen.getByRole('button', { name: 'Controle de versão' }));
+    expect((screen.getByRole('button', { name: /Push/ }) as HTMLButtonElement).disabled).toBe(true);
   });
 
   it('o chip do Git abre a aba Git na lateral', async () => {
     const user = await boot();
     await user.click(screen.getByTitle('Controle de versão · Ctrl Shift G'));
-    expect(screen.getByRole('tab', { name: /Git/ }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('heading', { name: 'Controle de versão' })).toBeTruthy();
   });
 
   it('Live Server abre o HTML aberto pelo caminho relativo e mostra a prévia', async () => {
@@ -159,7 +161,7 @@ describe('App · modo instalado', () => {
     await user.click(within(dialog).getByRole('button', { name: /Guardar chave/ }));
     expect(gateway.configureProvider).toHaveBeenCalledWith('openai', 'sk-proj-abc');
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(screen.getByText(/1 de 4 IAs conectadas/)).toBeTruthy();
+    expect(screen.getByText(/1 de 7 IAs conectadas/)).toBeTruthy();
   });
 
   it('erro ao guardar chave aparece e a janela continua aberta', async () => {
@@ -188,7 +190,7 @@ describe('App · modo instalado', () => {
     gateway.chat.mockResolvedValue({ text: '```html\n<b>x</b>\n```', model: 'm:free', inputTokens: 1, outputTokens: 1, costUsd: 0, latencyMs: 1 });
     const user = await boot();
     await user.click(screen.getByTitle('index.html'));
-    await user.click(screen.getByRole('button', { name: /Central IA/ }));
+    await user.click(screen.getAllByRole('button', { name: 'Agentes' })[0]);
     await user.type(screen.getByPlaceholderText(/Peça, pergunte/), 'gera{Enter}');
     await user.click(await screen.findByRole('button', { name: 'Inserir no cursor' }));
     expect((screen.getByLabelText('editor') as HTMLTextAreaElement).value).toBe('<h1>oi</h1><b>x</b>');
@@ -197,7 +199,9 @@ describe('App · modo instalado', () => {
 
   it('pasta sem Git oferece iniciar', async () => {
     tools.gitStatus.mockResolvedValue(gitFixture({ repository: false }));
+    const user = userEvent.setup();
     render(App);
-    expect(await screen.findByText('Sem Git · iniciar')).toBeTruthy();
+    await user.click(await screen.findByText('sem Git', { selector: '.status-item' }));
+    expect(await screen.findByRole('button', { name: 'Inicializar Git' })).toBeTruthy();
   });
 });

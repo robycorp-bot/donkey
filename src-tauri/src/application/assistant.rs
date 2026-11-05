@@ -19,6 +19,13 @@ impl AssistantService {
         Provider::ALL
             .into_iter()
             .map(|id| {
+                if id.keyless() {
+                    return Ok(ProviderStatus {
+                        id,
+                        configured: true,
+                        hint: Some("local, sem chave".into()),
+                    });
+                }
                 let key = if id == Provider::Copilot {
                     None
                 } else {
@@ -31,7 +38,7 @@ impl AssistantService {
                     if own {
                         masked
                     } else {
-                        format!("{masked} (chave do Boteco)")
+                        format!("{masked} (chave do OpenRouter)")
                     }
                 });
                 Ok(ProviderStatus {
@@ -43,7 +50,7 @@ impl AssistantService {
             .collect()
     }
 
-    /// Modal minha vida may reuse the OpenRouter key: free models cost nothing there.
+    /// Gratuitos may reuse the OpenRouter key: free models cost nothing there.
     fn key_for(provider: Provider) -> AppResult<Option<Zeroizing<String>>> {
         let own = SystemCredentials::get(provider)?.filter(|key| !key.is_empty());
         if own.is_some() || provider != Provider::MinhaVida {
@@ -59,6 +66,9 @@ impl AssistantService {
     pub fn configure(&self, provider: Provider, api_key: String) -> AppResult<()> {
         let secret = Zeroizing::new(api_key);
         provider.require_supported()?;
+        if provider.keyless() {
+            return Err("Este provedor roda na sua máquina e não usa chave de API.".into());
+        }
         let key = secret.trim();
         if key.is_empty() || key.len() > 2048 || !key.bytes().all(|byte| byte.is_ascii_graphic()) {
             return Err(
@@ -91,7 +101,13 @@ impl AssistantService {
         provider.require_supported()?;
         validate_chat(&model, &messages)?;
         if provider == Provider::MinhaVida && !model.trim().ends_with(":free") {
-            return Err("O Modal minha vida aceita somente modelos gratuitos (:free).".into());
+            return Err("O Gratuitos aceita somente modelos gratuitos (:free).".into());
+        }
+        if provider.keyless() {
+            return self
+                .providers
+                .chat(provider, model.trim(), &messages, "")
+                .await;
         }
         let secret = Self::key_for(provider)?
             .ok_or("Configure a chave deste provedor antes de abrir a conversa.")?;
@@ -153,6 +169,15 @@ mod tests {
         ))
         .unwrap_err();
         assert!(err.contains(":free"));
+    }
+
+    #[test]
+    fn ollama_needs_no_key_and_is_always_listed_as_ready() {
+        let service = AssistantService::new().unwrap();
+        assert!(service.configure(Provider::Ollama, "abc".into()).is_err());
+        let statuses = service.statuses().unwrap();
+        let ollama = statuses.iter().find(|s| s.id == Provider::Ollama).unwrap();
+        assert!(ollama.configured);
     }
 
     #[test]

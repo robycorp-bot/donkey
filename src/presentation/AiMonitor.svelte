@@ -21,6 +21,8 @@
   } from './ai-store';
   import Icon from './Icon.svelte';
 
+  export let onClose: (() => void) | null = null;
+
   let tab: 'requests' | 'actions' = 'requests';
   let now = Date.now();
   const clock = setInterval(() => (now = Date.now()), 30_000);
@@ -54,8 +56,9 @@
 
 <aside class="aim">
   <div class="aim-head">
-    <h2>Monitor de IA</h2>
+    <h2>Uso e gastos de IA</h2>
     <span class="aim-live" class:busy={running.length}>{running.length ? 'em uso' : 'ocioso'}</span>
+    {#if onClose}<button class="icon-button" aria-label="Fechar monitor" title="Fechar" on:click={onClose}><Icon name="close" size={14} /></button>{/if}
   </div>
 
   <div class="aim-scroll">
@@ -110,7 +113,7 @@
           <i style:width={`${budgetUse * 100}%`} class:hot={budgetUse >= 0.8}></i>
         </div>
         <span class="aim-sub"
-          >{Math.round(budgetUse * 100)}% usado · ao atingir, só o Modal minha vida continua</span
+          >{Math.round(budgetUse * 100)}% usado · ao atingir, só o Gratuitos continua</span
         >{/if}
     </section>
 

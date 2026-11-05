@@ -10,7 +10,7 @@
   export let openPaths: string[];
   export let readOnly = false;
   export let visible = true;
-  export let retro = false;
+  export let theme: 'dark' | 'light' = 'dark';
   export let onChange: (path: string, value: string) => void;
   export let onPosition: (line: number, column: number) => void;
   let container: HTMLDivElement;
@@ -165,52 +165,51 @@
         base: 'vs-dark',
         inherit: true,
         rules: [
-          { token: 'comment', foreground: '737F73', fontStyle: 'italic' },
-          { token: 'keyword', foreground: 'D4B7E9' },
-          { token: 'string', foreground: 'C4DE9B' },
-          { token: 'number', foreground: 'E8BC88' },
-          { token: 'type', foreground: '9EC7CC' },
+          { token: 'comment', foreground: '81C995', fontStyle: 'italic' },
+          { token: 'keyword', foreground: 'C58AF9' },
+          { token: 'string', foreground: 'F28B82' },
+          { token: 'number', foreground: 'FDD663' },
+          { token: 'type', foreground: '8AB4F8' },
         ],
         colors: {
-          'editor.background': '#202124',
-          'editor.foreground': '#D1D7E4',
-          'editorLineNumber.foreground': '#505867',
-          'editorLineNumber.activeForeground': '#9CBBFF',
-          'editor.lineHighlightBackground': '#252A34',
-          'editor.selectionBackground': '#3D4F6B',
-          'editorCursor.foreground': '#9CBBFF',
-          'editorIndentGuide.background1': '#303541',
-          'editorWidget.background': '#282D37',
-          'editorWidget.border': '#404959',
+          'editor.background': '#1f2023',
+          'editor.foreground': '#e8eaed',
+          'editorLineNumber.foreground': '#5f6368',
+          'editorLineNumber.activeForeground': '#8ab4f8',
+          'editor.lineHighlightBackground': '#292a2e',
+          'editor.selectionBackground': '#3c4a63',
+          'editorCursor.foreground': '#8ab4f8',
+          'editorIndentGuide.background1': '#33353a',
+          'editorWidget.background': '#292a2e',
+          'editorWidget.border': '#3c4043',
         },
       });
-      api.editor.defineTheme('mega-retro', {
-        base: 'vs-dark',
+      api.editor.defineTheme('mega-light', {
+        base: 'vs',
         inherit: true,
         rules: [
-          { token: '', foreground: '9FE870' },
-          { token: 'comment', foreground: '4E7A3A', fontStyle: 'italic' },
-          { token: 'keyword', foreground: 'D7F5A0' },
-          { token: 'string', foreground: 'F2C66D' },
-          { token: 'number', foreground: 'F2C66D' },
-          { token: 'type', foreground: 'B9F28A' },
+          { token: 'comment', foreground: '188038', fontStyle: 'italic' },
+          { token: 'keyword', foreground: '8430CE' },
+          { token: 'string', foreground: 'C5221F' },
+          { token: 'number', foreground: 'B06000' },
+          { token: 'type', foreground: '1A73E8' },
         ],
         colors: {
-          'editor.background': '#070A06',
-          'editor.foreground': '#9FE870',
-          'editorLineNumber.foreground': '#2F4A26',
-          'editorLineNumber.activeForeground': '#9FE870',
-          'editor.lineHighlightBackground': '#0F160C',
-          'editor.selectionBackground': '#2A4420',
-          'editorCursor.foreground': '#9FE870',
+          'editor.background': '#ffffff',
+          'editor.foreground': '#202124',
+          'editorLineNumber.foreground': '#9aa0a6',
+          'editorLineNumber.activeForeground': '#1a73e8',
+          'editor.lineHighlightBackground': '#f1f3f4',
+          'editor.selectionBackground': '#d2e3fc',
+          'editorCursor.foreground': '#1a73e8',
         },
       });
       const codeEditor = api.editor.create(container, {
         model: null,
-        theme: 'mega-brain',
+        theme: theme === 'light' ? 'mega-light' : 'mega-brain',
         automaticLayout: true,
         minimap: { enabled: false },
-        fontFamily: '"Cascadia Code", "Consolas", monospace',
+        fontFamily: '"Cascadia Code", "JetBrains Mono", "Consolas", monospace',
         fontSize: 13,
         lineHeight: 23,
         padding: { top: 22, bottom: 22 },
@@ -245,7 +244,7 @@
     };
   });
 
-  $: if (monaco) monaco.editor.setTheme(retro ? 'mega-retro' : 'mega-brain');
+  $: if (monaco) monaco.editor.setTheme(theme === 'light' ? 'mega-light' : 'mega-brain');
   $: if (instance && monaco) synchronize(path, value, language, openPaths, readOnly, visible);
 </script>
 
