@@ -1,0 +1,26 @@
+[project]
+name = "software-factory"
+version = "0.1.0"
+description = "Virtual software factory built on AutoGen"
+requires-python = ">=3.10"
+dependencies = ["pyyaml>=6"]
+
+[project.optional-dependencies]
+autogen = [
+  "autogen-agentchat>=0.4",
+  "autogen-ext[anthropic,openai]>=0.4",
+]
+dev = ["pytest>=8", "pytest-asyncio>=0.23"]
+
+[project.scripts]
+factory = "software_factory.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["software_factory*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
