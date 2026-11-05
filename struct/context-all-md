@@ -1,0 +1,49 @@
+## Stack Híbrido minimalista
+Tauri + Svelte/React + Monaco → editor com cara de web, mas rodando como app nativo.
+
+Extensões de IA: você pode embutir chamadas a APIs (Copilot, ChatGPT, Ollama local).
+
+Vantagem: mantém flexibilidade web, mas sem peso do Electron.
+
+## ideia central
+ - nao quero criar um fork do vs code mas um editor proprio para uso diario.
+
+## Ideias legais
+ - nao gostaria que tivesse a extensao do continue mas uma integracao direta com o OpenRouter e ter um chat dedicado a ele chamado "Boteco de IA".
+ - Porem o sistema precisa ter os chats dedicados ali por padrao Copilot, Codex, Anthopic, todos precisma pedir api key de uso com isso abre cada chat, nenhum funciona sem ter seu chat configurado.
+
+ - os codigos mais complicados para poder setar essas configs de IA, agentes, eu quero ter a sensacao no chat, que estou usando o claude, codex, copilot, boteco de ia, como se estivesse aberto eles.
+
+  - visual precisa ser diferenciado mas ao mesmo tempo muito cleam, eu gosto da ideia desse ide se parecer com um dos primeiros editores de texto da decada de 80 ou 90, um visual simpples, porme sabemos que é uma grande tecnologia, como um fusca com motor de ferrari.
+
+
+## Diferencial
+ - sem o peso de outros software, algo meu nao comercializavel. sera um projeto que no final vai gerar um executavel para producao.
+
+## Nomenclatura
+ - Coder mega-brain
+
+## a ideia é ser um editor animado.
+ - fazer com que trabalhar com I.A agentes, sejam legais, divertidos e faceis
+
+## Thema e icons
+ - ele tera um thema e icone proprio bem dark. mas bonito que repete aos primeiros windows ou os primeiros macs pode ser tambem.
+
+## sobre as extensoes ele tera algumas padroes porque sao para meu uso diario.
+
+ - git
+ - docker
+ - live server
+ - codex
+ - copilot
+ 
+
+## Arquitetutura
+ # Por mais que seja um compilador que vai gerar pra nos um .exe
+  - organizacao do projeto precisa ser em DDD
+  - precisa ter sistema de versionamento
+  - o build precisa ser claro
+
+
+## Meta
+ - precisa ser algo divertido, talvez a linguagem de resposta padrao dele, e comunicacao sejam uma nordestina bem das antigas e grosseiras
