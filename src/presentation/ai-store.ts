@@ -4,6 +4,7 @@ import { tools } from '../infrastructure/workspace-tools';
 import { PROVIDERS, getProvider } from '../domain/providers';
 import type { ChatMessage, ProviderId } from '../domain/models';
 import type { CatalogModel } from '../domain/workspace-tools';
+import { isFree, runBlend, suggestBlend, type BlendResult, type BlendStep, type BlendStepResult } from '../domain/agent-blend';
 import {
   estimateCost,
   startOfDay,
@@ -134,7 +135,7 @@ export async function send(text: string, attachment?: Attachment, ignoreBudget =
   if (id !== 'minhavida' && get(overBudget) && !ignoreBudget) {
     chatErrors.update((e) => ({
       ...e,
-      [id]: 'Limite de gasto de hoje atingido. Aumente o limite no monitor ou use o Modal minha vida (grátis).',
+      [id]: 'Limite de gasto de hoje atingido. Aumente o limite no monitor ou use o Gratuitos (grátis).',
     }));
     return;
   }
@@ -214,4 +215,85 @@ export async function send(text: string, attachment?: Attachment, ignoreBudget =
 export function clearConversation(id: ProviderId) {
   conversations.update((c) => ({ ...c, [id]: [] }));
   chatErrors.update((e) => ({ ...e, [id]: '' }));
+}
+
+/* ---------- Blend: several agents (and providers) working one task in sequence ---------- */
+export const blendFreeOnly = persisted<boolean>('blendFree', true);
+export const blendSteps = writable<BlendStep[]>([]);
+export const blendRunning = writable(false);
+export const blendResult = writable<BlendResult | null>(null);
+export const blendTask = writable('');
+export const blendProgress = writable<{ done: BlendStepResult[]; next: number } | null>(null);
+
+/** Fills the blend with sensible defaults from the providers that are ready. */
+export function autoBlend() {
+  blendSteps.set(suggestBlend(Object.entries(get(providerStatus)).map(([id, v]) => ({ id: id as ProviderId, configured: v.configured })), {
+    freeOnly: get(blendFreeOnly),
+  }));
+}
+
+export async function runBlendTask(task: string): Promise<BlendResult> {
+  blendRunning.set(true);
+  blendResult.set(null);
+  blendProgress.set(null);
+  const freeOnly = get(blendFreeOnly);
+  const chat = async (provider: ProviderId, model: string, messages: ChatMessage[]) => {
+    if (!get(providerStatus)[provider]?.configured)
+      throw new Error('provedor sem chave configurada');
+    if (!isFree(provider) && get(overBudget))
+      throw new Error('limite de gasto de hoje atingido');
+    const started = Date.now();
+    try {
+      const reply = await gateway.chat(provider, model, messages);
+      const cost =
+        reply.costUsd ??
+        estimateCost(provider, reply.model || model, reply.inputTokens, reply.outputTokens, get(catalog));
+      requests.update((list) => [
+        ...list,
+        {
+          id: crypto.randomUUID(),
+          time: started,
+          provider,
+          status: 'ok',
+          model: reply.model || model,
+          inputTokens: reply.inputTokens,
+          outputTokens: reply.outputTokens,
+          costUsd: cost,
+          estimated: reply.costUsd === null && cost !== null && cost > 0,
+          latencyMs: reply.latencyMs,
+        },
+      ]);
+      return { ...reply, costUsd: cost };
+    } catch (error) {
+      requests.update((list) => [
+        ...list,
+        {
+          id: crypto.randomUUID(),
+          time: started,
+          provider,
+          model,
+          status: 'error',
+          inputTokens: 0,
+          outputTokens: 0,
+          costUsd: null,
+          estimated: false,
+          latencyMs: Date.now() - started,
+          error: (error instanceof Error ? error.message : String(error)).slice(0, 200),
+        },
+      ]);
+      throw error;
+    }
+  };
+  try {
+    const result = await runBlend(task, get(blendSteps), chat, {
+      freeOnly,
+      onProgress: (done, next) => blendProgress.set({ done, next }),
+    });
+    blendResult.set(result);
+    track('ai', `Blend ${result.ok ? 'concluído' : 'interrompido'} · ${result.results.length} etapa(s)`);
+    return result;
+  } finally {
+    blendRunning.set(false);
+    blendProgress.set(null);
+  }
 }

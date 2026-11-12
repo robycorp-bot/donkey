@@ -37,3 +37,13 @@ Copilot continua visível como reservado. O SDK oficial já existe; ainda é pre
 Chaves persistidas pertencem ao cofre do sistema operacional. Chamadas de IA são realizadas no Rust, por destinos definidos pelo adapter. Arquivos são acessíveis após seleção da raiz nativa, com validação de escopo e conflito na gravação.
 
 **Consequências:** falha do cofre deve bloquear configuração/envio com erro claro, sem persistência alternativa em texto puro. O navegador oferece demonstração em memória e não simula conexão real de IA. Esses contratos precisam de verificação nativa e testes das regras de filesystem.
+
+## ADR-005 — Continuar no Tauri; sem fork do VS Code
+
+**Estado:** adotada em 2026-11-05.
+
+O produto precisa ser extremamente leve. Um fork do Code - OSS (modelo Cursor) traria extensões e depurador prontos, mas passa de 300 MB, usa a memória de um Electron completo e exige build de horas e manutenção contínua do upstream. O app atual (Tauri + Svelte + Monaco) tem instalador de cerca de 7 MB.
+
+Os recursos do VS Code entram aos poucos nesta base (LSP, paleta de comandos, busca no projeto, diff). A diferença do produto é o motor de agentes: provedores OpenRouter, OpenAI, Anthropic, Google, Grok e Ollama local, com um blend em etapas (planejar, codar, revisar) que prefere local e gratuito e tem modo só gratuito.
+
+**Consequências:** extensões do VS Code não rodam aqui. Qualquer dependência nova deve justificar seu peso. Reavaliar o fork só se a compatibilidade com extensões passar a pesar mais que a leveza.

@@ -19,8 +19,10 @@
   import { canFormat, formatCode } from '../application/formatter';
   import AiCenter from './AiCenter.svelte';
   import AiMonitor from './AiMonitor.svelte';
+  import { formatUsd } from '../domain/ai-metrics';
   import {
     loadStatuses,
+    todayTotals,
     pending as aiPending,
     providerStatus,
     selectedProvider,
@@ -43,6 +45,7 @@
     Object.entries($providerStatus).map(([key, value]) => [key, value.configured]),
   ) as Partial<Record<ProviderId, boolean>>;
   $: pending = $aiPending;
+  $: connectedCount = PROVIDERS.filter((p) => p.supported && configured[p.id]).length;
   let apiKey = '';
   let configBusy = false;
   let working = false;
@@ -86,17 +89,22 @@
   let liveRunning = false;
   let liveUrl = '';
   let liveBusy = false;
-  let retro = (() => {
+  let theme: 'dark' | 'light' = (() => {
     try {
-      return localStorage.getItem('cmb.retro') === 'true';
+      return localStorage.getItem('cmb.theme') === 'light' ? 'light' : 'dark';
     } catch {
-      return false;
+      return 'dark';
     }
   })();
-  function toggleRetro() {
-    retro = !retro;
-    remember('retro', retro);
+  function toggleTheme() {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    try {
+      localStorage.setItem('cmb.theme', theme);
+    } catch {
+      /* storage unavailable */
+    }
   }
+  $: if (typeof document !== 'undefined') document.documentElement.dataset.theme = theme;
   function relativeToWorkspace(path: string): string {
     if (!workspace) return '';
     return path
@@ -272,7 +280,7 @@
   let notification = '';
   let notificationTimer: ReturnType<typeof setTimeout>;
   let showJournal = false;
-  let showChat = true;
+  let showMonitor = false;
   let showSidebar = true;
   let line = 1;
   let column = 1;
@@ -664,251 +672,220 @@
 
 <svelte:window on:keydown={handleKeys} on:beforeunload={beforeUnload} />
 
-<div class="app-shell" class:retro class:native={!gateway.isPreview}>
+<div class="app-shell" data-theme={theme} class:native={!gateway.isPreview}>
   <header class="topbar" data-tauri-drag-region>
-    <div class="window-tools">
-      <div class="traffic-lights">
-        <button
-          class="traffic close"
-          disabled={gateway.isPreview}
-          aria-label="Fechar aplicativo"
-          title="Fechar aplicativo"
-          on:click={() => windowAction('close')}><span>×</span></button
-        ><button
-          class="traffic minimize"
-          disabled={gateway.isPreview}
-          aria-label="Minimizar janela"
-          title="Minimizar janela"
-          on:click={() => windowAction('minimize')}><span>−</span></button
-        ><button
-          class="traffic maximize"
-          disabled={gateway.isPreview}
-          aria-label="Ampliar janela"
-          title="Ampliar janela"
-          on:click={() => windowAction('maximize')}><span>+</span></button
-        >
-      </div>
-      <button
-        class="icon-button sidebar-toggle"
-        aria-label="Alternar barra lateral"
-        title="Alternar barra lateral"
-        on:click={() => (showSidebar = !showSidebar)}><Icon name="book" size={18} /></button
-      >
+    <div class="brand" data-tauri-drag-region>
+      <Brain size={22} /><strong>Coder mega-brain</strong>
     </div>
-    <button class="toolbar-project" on:click={openWorkspace} disabled={working}
-      ><Icon name="folder" size={16} /><strong>{workspace?.name ?? 'Coder mega-brain'}</strong><Icon
+    <button class="project-chip" on:click={openWorkspace} disabled={working} title="Abrir pasta · Ctrl O"
+      ><Icon name="folder" size={15} /><span>{workspace?.name ?? 'Abrir pasta'}</span><Icon
         name="down"
         size={11}
       /></button
     >
-    <span class="rollback-mystery" title="O próximo capítulo ainda não foi revelado">O grande rollback...</span>
-    {#if workspace && !gateway.isPreview}
-      <div class="git-strip" class:busy={$gitBusy}>
-        {#if $gitState?.repository}
-          <button class="git-chip" on:click={showGit} title="Controle de versão · Ctrl Shift G"
-            ><Icon name="branch" size={14} /><span>{$gitState.branch}</span>{#if gitChanges}<b
-                class="git-count">{gitChanges}</b
-              >{/if}{#if $gitState.ahead}<small title="Commits para enviar">↑{$gitState.ahead}</small
-              >{/if}{#if $gitState.behind}<small title="Commits para puxar">↓{$gitState.behind}</small
-              >{/if}</button
-          ><button
-            class="git-act"
-            title={$gitState.remote ? 'Pull · puxar do GitHub' : 'Vincule o GitHub no painel Git'}
-            disabled={$gitBusy || !$gitState.remote}
-            on:click={() => gitAct('pull')}>↓ Pull</button
-          ><button
-            class="git-act"
-            title={$gitState.remote ? 'Push · enviar para o GitHub' : 'Vincule o GitHub no painel Git'}
-            disabled={$gitBusy || !$gitState.remote}
-            on:click={() => gitAct('push')}>↑ Push</button
-          ><button
-            class="git-act"
-            title="Sincronizar: pull e depois push"
-            disabled={$gitBusy || !$gitState.remote}
-            on:click={() => gitAct('sync')}><Icon name="refresh" size={13} /></button
-          >
-        {:else if $gitState && $gitState.available}
-          <button class="git-chip" on:click={showGit}
-            ><Icon name="branch" size={14} /><span>Sem Git · iniciar</span></button
-          >
-        {:else}
-          <button class="git-chip" on:click={showGit}><Icon name="branch" size={14} /><span>Git</span></button>
-        {/if}
-        <button
-          class="git-act live"
-          class:active={liveRunning}
-          disabled={liveBusy}
-          title={liveRunning
-            ? `Live Server em ${liveUrl} · clique para parar`
-            : 'Live Server: abre o HTML aberto (ou index.html) e recarrega ao salvar'}
-          on:click={toggleLive}
-          ><span class="live-led"></span>{liveRunning ? 'Ao vivo' : 'Live Server'}</button
-        ><button
-          class="git-act"
-          class:active={showTerminal}
-          title="Terminal · Ctrl `"
-          on:click={() => toggleTerminal()}><Icon name="terminal" size={13} />Terminal</button
-        >
-      </div>
-    {/if}
+    <button class="search-box" on:click={() => (dialog = 'commands')} aria-label="Comandos" title="Comandos · Ctrl K"
+      ><Icon name="search" size={15} /><span>Buscar ou executar um comando</span><kbd>Ctrl K</kbd></button
+    >
     <div class="topbar-actions">
-      <button
-        class="icon-button"
-        title="Controle de versão"
-        aria-label="Controle de versão"
-        on:click={() => openTool('git')}><Icon name="branch" size={18} /></button
+      <button class="run-button" title="Executar projeto" on:click={() => openTool('run')}
+        ><Icon name="play" size={13} />Executar</button
       >
       <button
         class="icon-button"
-        title="Executar projeto"
-        aria-label="Executar projeto"
-        on:click={() => openTool('run')}><Icon name="terminal" size={18} /></button
+        title={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+        aria-label="Alternar tema"
+        on:click={toggleTheme}><Icon name={theme === 'dark' ? 'sun' : 'moon'} size={17} /></button
       >
       <button
         class="icon-button"
-        on:click={() => (dialog = 'commands')}
-        title="Comandos · Ctrl K"
-        aria-label="Comandos"><Icon name="search" size={18} /></button
-      ><button
-        class="icon-button"
-        title="Configurações de IA"
+        title="Provedores de IA"
         aria-label="Configurações de IA"
-        on:click={() => openSettings()}><Icon name="settings" size={18} /></button
-      ><button
-        class="icon-button"
-        title="Monitor de IA"
-        aria-label="Alternar monitor de IA"
-        on:click={() => (showChat = !showChat)}><Icon name="chat" size={18} /></button
+        on:click={() => openSettings()}><Icon name="settings" size={17} /></button
       >
+      <span class="window-controls">
+        <button
+          class="icon-button"
+          disabled={gateway.isPreview}
+          aria-label="Minimizar janela"
+          title="Minimizar"
+          on:click={() => windowAction('minimize')}><Icon name="minimize" size={14} /></button
+        ><button
+          class="icon-button"
+          disabled={gateway.isPreview}
+          aria-label="Ampliar janela"
+          title="Ampliar"
+          on:click={() => windowAction('maximize')}><Icon name="maximize" size={12} /></button
+        ><button
+          class="icon-button close"
+          disabled={gateway.isPreview}
+          aria-label="Fechar aplicativo"
+          title="Fechar"
+          on:click={() => windowAction('close')}><Icon name="close" size={14} /></button
+        >
+      </span>
     </div>
   </header>
 
   <div
     class="workbench"
-    class:chat-hidden={!showChat}
+    class:monitor-hidden={!showMonitor}
     class:sidebar-hidden={!showSidebar}
     style:--sidebar-w={`${sidebarWidth}px`}
     style:--chat-w={`${chatWidth}px`}
   >
-    <aside class="explorer">
-      <div class="panel-heading sidebar-heading">
-        <div class="sidebar-tabs" role="tablist">
-          <button
-            role="tab"
-            aria-selected={sidebarView === 'files'}
-            class:on={sidebarView === 'files'}
-            on:click={() => (sidebarView = 'files')}>Arquivos</button
-          ><button
-            role="tab"
-            aria-selected={sidebarView === 'git'}
-            class:on={sidebarView === 'git'}
-            on:click={showGit}
-            >Git{#if gitChanges}<b class="git-count">{gitChanges}</b>{/if}</button
-          >
-        </div>
-        <div class="sidebar-actions">
-          {#if sidebarView === 'files'}<button
+    <nav class="rail" aria-label="Navegação principal">
+      <button
+        class:on={showHome && !showPreview}
+        aria-label="Agentes"
+        title="Agentes de IA"
+        on:click={() => {
+          showHome = true;
+          showPreview = false;
+        }}><Icon name="agents" size={20} /><span>Agentes</span></button
+      ><button
+        class:on={showSidebar && sidebarView === 'files'}
+        aria-label="Arquivos"
+        title="Arquivos · Ctrl B"
+        on:click={() => {
+          if (showSidebar && sidebarView === 'files') showSidebar = false;
+          else {
+            sidebarView = 'files';
+            showSidebar = true;
+          }
+        }}><Icon name="folder" size={20} /><span>Arquivos</span></button
+      ><button
+        class:on={showSidebar && sidebarView === 'git'}
+        aria-label="Controle de versão"
+        title="Git · Ctrl Shift G"
+        on:click={() => (showSidebar && sidebarView === 'git' ? (showSidebar = false) : showGit())}
+        ><Icon name="branch" size={20} /><span>Git</span>{#if gitChanges}<b class="rail-badge"
+            >{gitChanges}</b
+          >{/if}</button
+      ><button
+        class:on={showTerminal}
+        aria-label="Terminal"
+        title="Terminal · Ctrl+`"
+        on:click={() => toggleTerminal()}><Icon name="terminal" size={20} /><span>Terminal</span></button
+      >
+    </nav>
+
+    {#if showSidebar}
+      <aside class="explorer">
+        <div class="panel-heading">
+          <h2>{sidebarView === 'git' ? 'Controle de versão' : 'Arquivos'}</h2>
+          <div class="sidebar-actions">
+            {#if sidebarView === 'files'}<button
+                class="icon-button"
+                aria-label="Recarregar arquivos"
+                title="Recarregar arquivos"
+                disabled={!workspace}
+                on:click={reloadTree}><Icon name="refresh" size={14} /></button
+              ><button
+                class="icon-button"
+                aria-label="Recolher pastas"
+                title="Recolher todas as pastas"
+                disabled={!Object.values(expanded).some(Boolean)}
+                on:click={collapseAll}><Icon name="down" size={14} /></button
+              >{:else}<button
+                class="icon-button"
+                aria-label="Atualizar Git"
+                title="Atualizar Git"
+                disabled={$gitBusy}
+                on:click={() => refreshGit()}><Icon name="refresh" size={14} /></button
+              >{/if}<button
               class="icon-button"
-              aria-label="Recarregar arquivos"
-              title="Recarregar arquivos"
-              disabled={!workspace}
-              on:click={reloadTree}><Icon name="refresh" size={14} /></button
-            ><button
-              class="icon-button"
-              aria-label="Recolher pastas"
-              title="Recolher todas as pastas"
-              disabled={!Object.values(expanded).some(Boolean)}
-              on:click={collapseAll}><Icon name="down" size={14} /></button
-            >{:else}<button
-              class="icon-button"
-              aria-label="Atualizar Git"
-              title="Atualizar Git"
-              disabled={$gitBusy}
-              on:click={() => refreshGit()}><Icon name="refresh" size={14} /></button
-            >{/if}<button
-            class="icon-button"
-            aria-label="Abrir pasta"
-            title="Abrir pasta · Ctrl O"
-            on:click={openWorkspace}
-            disabled={working}><Icon name="folder" size={14} /></button
-          ><button
-            class="icon-button"
-            aria-label="Esconder barra lateral"
-            title="Esconder barra lateral · Ctrl B"
-            on:click={() => (showSidebar = false)}><Icon name="close" size={14} /></button
-          >
-        </div>
-      </div>
-      {#if sidebarView === 'git' && workspace}
-        <SourceControl isPreview={gateway.isPreview} onOpenTerminal={() => toggleTerminal(true)} />
-      {:else}
-      <div class="file-search">
-        <Icon name="search" size={14} /><input
-          aria-label="Filtrar arquivos carregados"
-          placeholder="Encontrar arquivo..."
-          bind:value={fileFilter}
-          bind:this={searchInput}
-        /><kbd>⌃P</kbd>
-      </div>
-      {#if workspace}
-        <div class="folder-root">
-          <Icon name="folder" size={13} /><span>{workspace.name}</span><span class="local-label"
-            >LOCAL</span
-          >
-        </div>
-        <div class="file-tree">
-          {#each visibleEntries as { entry, depth } (entry.path)}
-            <button
-              class="tree-entry"
-              class:selected={activePath === entry.path && !showHome}
-              style:padding-left={`${16 + depth * 13}px`}
-              on:click={() => openEntry(entry)}
-              title={entry.name}
+              aria-label="Esconder barra lateral"
+              title="Esconder · Ctrl B"
+              on:click={() => (showSidebar = false)}><Icon name="close" size={14} /></button
             >
-              {#if entry.isDirectory}<Icon
-                  name={expanded[entry.path] ? 'down' : 'chevron'}
-                  size={11}
-                /><Icon name="folder" size={15} />{:else}<span
-                  class="file-kind"
-                  class:ts={entry.name.endsWith('.ts')}
-                  class:md={entry.name.endsWith('.md')}
-                  >{entry.name.endsWith('.ts')
-                    ? 'TS'
-                    : entry.name.endsWith('.md')
-                      ? 'M↓'
-                      : entry.name.endsWith('.json')
-                        ? '{}'
-                        : '≡'}</span
-                >{/if}<span>{entry.name}</span
-              >{#if tabs.some((t) => t.path === entry.path && isDocumentDirty(t))}<span
-                  class="dirty-dot"
-                ></span>{/if}
-            </button>
-          {/each}
-          {#if !visibleEntries.length}<p class="tree-empty">
-              {fileFilter
-                ? 'Nenhum arquivo carregado corresponde.'
-                : 'Pasta vazia ou sem arquivos visíveis.'}
-            </p>{/if}
+          </div>
         </div>
-      {:else}
-        <div class="explorer-empty">
-          <span class="empty-folder"><Icon name="folder" size={28} /></span><strong
-            >Seu próximo projeto</strong
-          >
-          <p>Um lugar para suas ideias.<br />Comece abrindo uma pasta.</p>
-          <button class="secondary-button" on:click={openWorkspace} disabled={working}
-            ><Icon name="plus" size={15} />{working
-              ? 'Abrindo...'
-              : gateway.isPreview
-                ? 'Explorar exemplo'
-                : 'Abrir uma pasta'}</button
-          ><span class="shortcut-note">Ctrl + O</span>
-        </div>
-      {/if}
-      {/if}
-    </aside>
-    {#if showSidebar}<div
+        {#if sidebarView === 'git' && workspace}
+          {#if $gitState?.repository && !gateway.isPreview}
+            <div class="sync-bar" class:busy={$gitBusy}>
+              <button
+                title={$gitState.remote ? 'Puxar do GitHub' : 'Vincule o GitHub abaixo'}
+                disabled={$gitBusy || !$gitState.remote}
+                on:click={() => gitAct('pull')}
+                >↓ Pull{#if $gitState.behind}<small>{$gitState.behind}</small>{/if}</button
+              ><button
+                title={$gitState.remote ? 'Enviar para o GitHub' : 'Vincule o GitHub abaixo'}
+                disabled={$gitBusy || !$gitState.remote}
+                on:click={() => gitAct('push')}
+                >↑ Push{#if $gitState.ahead}<small>{$gitState.ahead}</small>{/if}</button
+              ><button
+                title="Pull e depois push"
+                aria-label="Sincronizar"
+                disabled={$gitBusy || !$gitState.remote}
+                on:click={() => gitAct('sync')}><Icon name="refresh" size={13} />Sincronizar</button
+              >
+            </div>
+          {/if}
+          <SourceControl isPreview={gateway.isPreview} onOpenTerminal={() => toggleTerminal(true)} />
+        {:else}
+          <div class="file-search">
+            <Icon name="search" size={14} /><input
+              aria-label="Filtrar arquivos carregados"
+              placeholder="Filtrar arquivos"
+              bind:value={fileFilter}
+              bind:this={searchInput}
+            />
+          </div>
+          {#if workspace}
+            <div class="folder-root"><Icon name="folder" size={13} /><span>{workspace.name}</span></div>
+            <div class="file-tree">
+              {#each visibleEntries as { entry, depth } (entry.path)}
+                <button
+                  class="tree-entry"
+                  class:selected={activePath === entry.path && !showHome}
+                  style:padding-left={`${12 + depth * 14}px`}
+                  on:click={() => openEntry(entry)}
+                  title={entry.name}
+                >
+                  {#if entry.isDirectory}<Icon
+                      name={expanded[entry.path] ? 'down' : 'chevron'}
+                      size={11}
+                    /><Icon name="folder" size={15} />{:else}<span
+                      class="file-kind"
+                      class:ts={entry.name.endsWith('.ts')}
+                      class:md={entry.name.endsWith('.md')}
+                      >{entry.name.endsWith('.ts')
+                        ? 'TS'
+                        : entry.name.endsWith('.md')
+                          ? 'M↓'
+                          : entry.name.endsWith('.json')
+                            ? '{}'
+                            : '≡'}</span
+                    >{/if}<span class="tree-name">{entry.name}</span
+                  >{#if tabs.some((t) => t.path === entry.path && isDocumentDirty(t))}<span
+                      class="dirty-dot"
+                    ></span>{/if}
+                </button>
+              {/each}
+              {#if !visibleEntries.length}<p class="tree-empty">
+                  {fileFilter
+                    ? 'Nenhum arquivo carregado corresponde.'
+                    : 'Pasta vazia ou sem arquivos visíveis.'}
+                </p>{/if}
+            </div>
+          {:else}
+            <div class="explorer-empty">
+              <span class="empty-folder"><Icon name="folder" size={26} /></span><strong
+                >Nenhuma pasta aberta</strong
+              >
+              <p>Abra a pasta do seu projeto para ver os arquivos e usar o Git.</p>
+              <button class="primary-button" on:click={openWorkspace} disabled={working}
+                ><Icon name="plus" size={15} />{working
+                  ? 'Abrindo...'
+                  : gateway.isPreview
+                    ? 'Explorar exemplo'
+                    : 'Abrir pasta'}</button
+              ><span class="shortcut-note">Ctrl + O</span>
+            </div>
+          {/if}
+        {/if}
+      </aside>
+      <div
         class="resizer"
         role="separator"
         aria-orientation="vertical"
@@ -919,18 +896,19 @@
           sidebarWidth = 260;
           remember('sidebar', 260);
         }}
-      ></div>{/if}
+      ></div>
+    {/if}
 
     <main class="main-area">
       <div class="tab-bar">
         <div class="tabs">
           <button
             class="editor-tab home-tab"
-            class:chosen={showHome}
+            class:chosen={showHome && !showPreview}
             on:click={() => {
               showHome = true;
               showPreview = false;
-            }}><Icon name="spark" size={14} />Central IA</button
+            }}><Icon name="agents" size={14} />Agentes</button
           >{#each tabs as tab (tab.path)}<div
               class="tab-wrapper"
               class:chosen={!showHome && activePath === tab.path}
@@ -943,9 +921,7 @@
                   showHome = false;
                   showPreview = false;
                 }}
-                ><Icon name="code" size={14} />{tab.name}{#if isDocumentDirty(tab)}<span
-                    class="dirty-dot"
-                  ></span>{/if}</button
+                >{tab.name}{#if isDocumentDirty(tab)}<span class="dirty-dot"></span>{/if}</button
               ><button
                 class="tab-close"
                 on:click={() => closeTab(tab.path)}
@@ -954,31 +930,27 @@
               >
             </div>{/each}
         </div>
-        <button
-          class="icon-button close-active-tab"
-          on:click={closeActiveTab}
-          disabled={!activeTab || showHome}
-          aria-label="Fechar aba ativa"
-          title="Fechar aba ativa · Ctrl W"><Icon name="close" size={14} /></button>
-        {#if activeTab && !showHome}<button
-            class="format-button"
-            class:off={!canFormat(activeTab.path, activeTab.language)}
-            on:click={() => formatActive()}
-            disabled={formatting}
-            title="Formatar código · Shift Alt F">{formatting ? '...' : '{ } Formatar'}</button
-          ><label class="format-toggle" title="Formatar automaticamente ao salvar"
-            ><input
-              type="checkbox"
-              bind:checked={formatOnSave}
-              on:change={() => remember('formatOnSave', formatOnSave)}
-            />ao salvar</label
-          ><button
-            class="icon-button save-button"
-            on:click={saveActive}
-            disabled={saving || !isDocumentDirty(activeTab)}
-            aria-label="Salvar arquivo"
-            title="Salvar · Ctrl S"><Icon name="save" size={16} /></button
-          >{/if}
+        {#if activeTab && !showHome}<div class="tab-tools">
+            <label class="format-toggle" title="Formatar automaticamente ao salvar"
+              ><input
+                type="checkbox"
+                bind:checked={formatOnSave}
+                on:change={() => remember('formatOnSave', formatOnSave)}
+              />Formatar ao salvar</label
+            ><button
+              class="ghost-button"
+              class:off={!canFormat(activeTab.path, activeTab.language)}
+              on:click={() => formatActive()}
+              disabled={formatting}
+              title="Formatar código · Shift Alt F">{formatting ? 'Formatando...' : 'Formatar'}</button
+            ><button
+              class="primary-button compact save-button"
+              on:click={saveActive}
+              disabled={saving || !isDocumentDirty(activeTab)}
+              aria-label="Salvar arquivo"
+              title="Salvar · Ctrl S"><Icon name="save" size={14} />Salvar</button
+            >
+          </div>{/if}
       </div>
 
       <div class="editor-surface">
@@ -1019,7 +991,7 @@
           >
             <CodeEditor
               bind:this={codeEditor}
-              {retro}
+              {theme}
               path={activeTab?.path ?? ''}
               value={activeTab?.content ?? ''}
               language={activeTab?.language ?? 'plaintext'}
@@ -1065,28 +1037,9 @@
           />
         </div>
       {/if}
-      <div class="editor-bottom">
-        <button on:click={() => openTool('git')}
-          ><Icon name="branch" size={13} />{$gitState?.repository ? $gitState.branch : 'Git'}</button
-        >
-        <button class:journal-open={showTerminal} on:click={() => toggleTerminal()}
-          ><Icon name="terminal" size={13} />Terminal</button
-        >
-        <button on:click={() => openTool('run')}><Icon name="monitor" size={13} />Executar</button>
-        {#if previewUrl}<button on:click={() => (showPreview = !showPreview)}
-            ><Icon name="monitor" size={13} />Prévia</button
-          >{/if}
-        <button class:journal-open={showJournal} on:click={() => (showJournal = !showJournal)}
-          ><Icon name="terminal" size={13} />Atividade</button
-        ><span
-          >{gateway.isPreview ? 'Sessão temporária em memória' : 'Arquivos locais · UTF-8'}</span
-        ><span class="editor-bottom-right"
-          >{showHome ? 'Pode chegar, a casa é sua.' : `Ln ${line}, Col ${column}`}</span
-        >
-      </div>
     </main>
 
-    {#if showChat}<div
+    {#if showMonitor}<div
         class="resizer"
         role="separator"
         aria-orientation="vertical"
@@ -1097,24 +1050,52 @@
           chatWidth = 340;
           remember('chat', 340);
         }}
-      ></div><AiMonitor />{/if}
+      ></div><AiMonitor onClose={() => (showMonitor = false)} />{/if}
   </div>
 
   <footer class="statusbar">
     <div>
-      <button class="visual-toggle" on:click={toggleRetro} title="Alternar visual"
-        >{retro ? '▮ terminal' : '◐ moderno'}</button
-      ><span class="status-divider"></span>
-      <Brain size={15} /><span>Coder mega-brain</span><span class="status-divider"></span><span
-        class="live-dot"
-      ></span><span>{gateway.isPreview ? 'Prévia web' : 'Desktop local'}</span>
+      {#if workspace && !gateway.isPreview}<button class="status-item" on:click={showGit} title="Controle de versão · Ctrl Shift G"
+          ><Icon name="branch" size={12} />{$gitState?.repository
+            ? $gitState.branch
+            : 'sem Git'}{#if gitChanges}<b>{gitChanges}</b>{/if}{#if $gitState?.ahead}<small>↑{$gitState.ahead}</small
+            >{/if}{#if $gitState?.behind}<small>↓{$gitState.behind}</small>{/if}</button
+        >{/if}<button
+        class="status-item"
+        class:active={showJournal}
+        on:click={() => (showJournal = !showJournal)}
+        title="Registro de atividade"><Icon name="terminal" size={12} />Atividade</button
+      >{#if previewUrl}<button class="status-item" on:click={() => (showPreview = !showPreview)}
+          ><Icon name="monitor" size={12} />Prévia</button
+        >{/if}{#if workspace && !gateway.isPreview}<button
+          class="status-item live"
+          class:active={liveRunning}
+          disabled={liveBusy}
+          on:click={toggleLive}
+          title={liveRunning
+            ? `Live Server em ${liveUrl} · clique para parar`
+            : 'Live Server: abre o HTML aberto (ou index.html) e recarrega ao salvar'}
+          ><span class="live-led" class:off={!liveRunning}></span>{liveRunning ? 'Ao vivo' : 'Live Server'}</button
+        >{/if}<span class="status-text"
+        >{gateway.isPreview ? 'Prévia web · sessão em memória' : 'Desktop local'}</span
+      >
     </div>
     <div>
-      <span>{tabs.length} {tabs.length === 1 ? 'arquivo aberto' : 'arquivos abertos'}</span><span
-        class="status-divider"
-      ></span><span>{PROVIDERS.filter((p) => configured[p.id]).length} de {PROVIDERS.filter((p) => p.supported)
-          .length} IAs conectadas</span
-      ><Icon name="coffee" size={13} />
+      {#if !showHome && activeTab}<span class="status-text">Ln {line}, Col {column}</span>{/if}<button
+        class="status-item"
+        on:click={() => openSettings()}
+        title="Provedores de IA"
+        ><span class="status-dot" class:on={connectedCount > 0}></span>{connectedCount} de {PROVIDERS.filter(
+          (p) => p.supported,
+        ).length} IAs conectadas</button
+      ><button
+        class="status-item"
+        class:active={showMonitor}
+        on:click={() => (showMonitor = !showMonitor)}
+        title="Gastos e uso de IA"
+        aria-label="Alternar monitor de IA"
+        ><Icon name="wallet" size={12} />Hoje {formatUsd($todayTotals.costUsd)}</button
+      >
     </div>
   </footer>
 </div>
@@ -1151,16 +1132,16 @@
       <div class="modal-heading">
         <span class="small-label"
           >{dialog === 'settings'
-            ? 'AS CHAVES DA CASA'
+            ? 'PROVEDORES DE IA'
             : dialog === 'commands'
-              ? 'NA PONTA DOS DEDOS'
+              ? 'COMANDOS'
               : dialog === 'discard'
-                ? 'OPA, TEM COISA NA MESA'
+                ? 'ALTERAÇÕES NÃO SALVAS'
                 : dialog === 'git'
                   ? 'CONTROLE DE VERSÃO'
                   : dialog === 'run'
                     ? 'EXECUTAR PROJETO'
-                    : 'A OFICINA TÁ CRESCENDO'}</span
+                    : 'SOBRE'}</span
         ><button class="icon-button" aria-label="Fechar janela" on:click={closeDialog}
           ><Icon name="close" /></button
         >
@@ -1173,8 +1154,8 @@
             dialog = null;
           }}
         />
-      {:else if dialog === 'settings'}<h2>Conecte seus cérebros.</h2>
-        <p class="modal-description">Cada provedor tem sua chave e sua conversa.</p>
+      {:else if dialog === 'settings'}<h2>Conecte seus provedores.</h2>
+        <p class="modal-description">Cada provedor tem sua própria chave, guardada no cofre do sistema.</p>
         <div class="settings-providers">
           {#each PROVIDERS as item}<button
               class:chosen={settingProvider === item.id}
@@ -1196,7 +1177,7 @@
               Esta é a prévia no navegador. Abra o aplicativo desktop para guardar chaves com
               segurança e conversar com as APIs.
             </p>
-          </div>{/if}{#if getProvider(settingProvider).supported}<form
+          </div>{/if}{#if getProvider(settingProvider).supported && !getProvider(settingProvider).local}<form
             on:submit|preventDefault={configure}
           >
             <label class="field-label" for="api-key"
@@ -1242,8 +1223,8 @@
               testados.
             </p>
           </div>{/if}
-      {:else if dialog === 'commands'}<h2>Seu próximo comando.</h2>
-        <p class="modal-description">Um atalho pra deixar a ideia correr.</p>
+      {:else if dialog === 'commands'}<h2>Comandos</h2>
+        <p class="modal-description">Atalhos para tudo o que o editor faz.</p>
         <div class="command-list">
           <button
             on:click={() => {
@@ -1269,12 +1250,32 @@
             on:click={() => {
               closeDialog();
               showJournal = !showJournal;
-            }}><Icon name="terminal" /><span>Alternar diário do cérebro</span></button
+            }}><Icon name="terminal" /><span>Mostrar atividade</span></button
           ><button
             on:click={() => {
               closeDialog();
               showHome = true;
-            }}><Icon name="spark" /><span>Voltar pro começo de prosa</span></button
+            }}><Icon name="agents" /><span>Ir para os agentes</span></button
+          ><button
+            on:click={() => {
+              closeDialog();
+              toggleTheme();
+            }}><Icon name="sun" /><span>Alternar tema claro e escuro</span></button
+          ><button
+            on:click={() => {
+              closeDialog();
+              openTool('run');
+            }}><Icon name="play" /><span>Executar projeto</span></button
+          ><button
+            on:click={() => {
+              closeDialog();
+              void toggleTerminal();
+            }}><Icon name="terminal" /><span>Alternar terminal</span><kbd>Ctrl `</kbd></button
+          ><button
+            on:click={() => {
+              closeDialog();
+              showMonitor = !showMonitor;
+            }}><Icon name="wallet" /><span>Mostrar gastos de IA</span></button
           >
         </div>
       {:else if dialog === 'discard'}<h2>Tem alteração sem salvar.</h2>
@@ -1291,7 +1292,7 @@
             }}>Descartar e continuar</button
           >
         </div>
-      {:else}<h2>Um Fusca cheio de ideia.</h2>
+      {:else}<h2>Sobre o projeto.</h2>
         <p class="modal-description">Uma base própria para o seu editor do dia a dia.</p>
         <div class="roadmap-row">
           <span class="roadmap-number">01</span>

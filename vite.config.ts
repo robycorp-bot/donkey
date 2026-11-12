@@ -17,6 +17,8 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['src/test/setup.ts'],
     restoreMocks: true,
+    // Many jsdom workers start at once on Windows; the first App render can exceed 5 s under load.
+    testTimeout: 20000,
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,svelte}'],

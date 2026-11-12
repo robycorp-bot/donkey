@@ -41,6 +41,7 @@ impl ProviderClient {
             Provider::Anthropic => request
                 .header("x-api-key", key)
                 .header("anthropic-version", "2023-06-01"),
+            _ if provider.keyless() => request,
             _ => request.bearer_auth(key),
         };
         let mut response = request.send().await.map_err(|error| {
@@ -109,7 +110,11 @@ struct Usage {
 fn extract_usage(provider: Provider, value: &Value) -> Usage {
     let number = |path: &str| value.pointer(path).and_then(Value::as_u64).unwrap_or(0);
     let (input, output) = match provider {
-        Provider::OpenRouter | Provider::MinhaVida => (
+        Provider::OpenRouter
+        | Provider::MinhaVida
+        | Provider::Google
+        | Provider::Grok
+        | Provider::Ollama => (
             number("/usage/prompt_tokens"),
             number("/usage/completion_tokens"),
         ),
@@ -119,7 +124,7 @@ fn extract_usage(provider: Provider, value: &Value) -> Usage {
         ),
     };
     let cost = match provider {
-        Provider::MinhaVida => Some(0.0),
+        Provider::MinhaVida | Provider::Ollama => Some(0.0),
         Provider::OpenRouter => value.pointer("/usage/cost").and_then(Value::as_f64),
         _ => None,
     };
@@ -242,6 +247,21 @@ fn request_payload(
                 }),
             )
         }
+        Provider::Google | Provider::Grok | Provider::Ollama => {
+            let mut transcript = vec![json!({ "role": "system", "content": INSTRUCTIONS })];
+            transcript.extend(messages.iter().map(|message| json!(message)));
+            let endpoint = match provider {
+                Provider::Google => "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+                Provider::Grok => "https://api.x.ai/v1/chat/completions",
+                _ => "http://127.0.0.1:11434/v1/chat/completions",
+            };
+            (
+                endpoint,
+                json!({
+                    "model": model, "messages": transcript, "max_tokens": 4096, "stream": false
+                }),
+            )
+        }
         Provider::OpenAI => (
             "https://api.openai.com/v1/responses",
             json!({
@@ -265,7 +285,11 @@ fn extract_text(provider: Provider, value: &Value) -> AppResult<String> {
         return Err("O provedor não conseguiu concluir a resposta. Tente novamente.".into());
     }
     let text = match provider {
-        Provider::OpenRouter | Provider::MinhaVida => value
+        Provider::OpenRouter
+        | Provider::MinhaVida
+        | Provider::Google
+        | Provider::Grok
+        | Provider::Ollama => value
             .pointer("/choices/0/message/content")
             .and_then(Value::as_str)
             .unwrap_or("")
@@ -314,7 +338,11 @@ fn extract_text(provider: Provider, value: &Value) -> AppResult<String> {
         Provider::Anthropic => {
             value.get("stop_reason").and_then(Value::as_str) == Some("max_tokens")
         }
-        Provider::OpenRouter | Provider::MinhaVida => {
+        Provider::OpenRouter
+        | Provider::MinhaVida
+        | Provider::Google
+        | Provider::Grok
+        | Provider::Ollama => {
             value
                 .pointer("/choices/0/finish_reason")
                 .and_then(Value::as_str)
@@ -360,6 +388,32 @@ mod tests {
         assert_eq!(payload["input"][0]["content"], "texto explícito");
         assert!(payload.get("tools").is_none());
         assert!(request_payload(Provider::Copilot, "anything", &transcript).is_err());
+    }
+
+    #[test]
+    fn google_grok_and_ollama_use_openai_compatible_chat_endpoints() {
+        let transcript = vec![ChatMessage {
+            role: MessageRole::User,
+            content: "oi".into(),
+        }];
+        for (provider, host) in [
+            (Provider::Google, "https://generativelanguage.googleapis.com/"),
+            (Provider::Grok, "https://api.x.ai/"),
+            (Provider::Ollama, "http://127.0.0.1:11434/"),
+        ] {
+            let (endpoint, payload) = request_payload(provider, "m", &transcript).unwrap();
+            assert!(endpoint.starts_with(host) && endpoint.ends_with("/chat/completions"));
+            assert_eq!(payload["messages"][1]["content"], "oi");
+            assert!(payload.get("usage").is_none());
+            let reply = json!({"choices":[{"message":{"content":"ok"},"finish_reason":"stop"}],
+                "usage":{"prompt_tokens":3,"completion_tokens":4}});
+            assert_eq!(extract_text(provider, &reply).unwrap(), "ok");
+            let usage = extract_usage(provider, &reply);
+            assert_eq!((usage.input, usage.output), (3, 4));
+        }
+        let reply = json!({"choices":[{"message":{"content":"x"}}]});
+        assert_eq!(extract_usage(Provider::Ollama, &reply).cost, Some(0.0));
+        assert_eq!(extract_usage(Provider::Google, &reply).cost, None);
     }
 
     #[test]

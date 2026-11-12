@@ -9,6 +9,8 @@ export interface ProviderDefinition {
   defaultModel: string;
   suggestedModels: string[];
   supported: boolean;
+  /** Runs on this machine: no API key and no cost. */
+  local?: boolean;
   configurationHint: string;
   documentationUrl: string;
 }
@@ -17,24 +19,24 @@ export interface ProviderDefinition {
 export const PROVIDERS: ProviderDefinition[] = [
   {
     id: 'minhavida',
-    name: 'Modal minha vida',
-    label: 'Modal minha vida',
-    shortName: 'MV',
+    name: 'Gratuitos',
+    label: 'Gratuitos',
+    shortName: 'Fr',
     description:
-      'Só modelos gratuitos, de várias empresas, num chat só. Escolha o modelo na lista e bora.',
+      'Só modelos gratuitos de várias empresas. Sem cartão e sem custo.',
     defaultModel: 'meta-llama/llama-3.3-70b-instruct:free',
     suggestedModels: [],
     supported: true,
     configurationHint:
-      'Usa os modelos gratuitos (:free) do OpenRouter. Crie uma conta grátis em openrouter.ai e cole a chave; sem crédito nenhum. Se o Boteco de IA já tiver chave, ela é reaproveitada.',
+      'Usa os modelos gratuitos (:free) do OpenRouter. Crie uma conta grátis em openrouter.ai e cole a chave. Se o OpenRouter já tiver chave, ela é reaproveitada.',
     documentationUrl: 'https://openrouter.ai/models?max_price=0',
   },
   {
     id: 'openrouter',
-    name: 'Boteco de IA',
-    label: 'Boteco de IA',
+    name: 'OpenRouter',
+    label: 'OpenRouter',
     shortName: 'B',
-    description: 'Vários modelos, uma prosa só. Conexão direta com o OpenRouter.',
+    description: 'Centenas de modelos com uma chave só.',
     defaultModel: 'openai/gpt-4.1-mini',
     suggestedModels: ['openai/gpt-4.1-mini', 'anthropic/claude-sonnet-5'],
     supported: true,
@@ -46,7 +48,7 @@ export const PROVIDERS: ProviderDefinition[] = [
     name: 'Codex',
     label: 'Codex',
     shortName: 'C',
-    description: 'Seu espaço de conversa com modelos da API OpenAI.',
+    description: 'Modelos da OpenAI.',
     defaultModel: 'gpt-4.1-mini',
     suggestedModels: ['gpt-4.1-mini', 'gpt-4.1'],
     supported: true,
@@ -67,6 +69,44 @@ export const PROVIDERS: ProviderDefinition[] = [
     documentationUrl: 'https://platform.claude.com/docs/en/about-claude/models/overview',
   },
   {
+    id: 'google',
+    name: 'Google Gemini',
+    label: 'Google Gemini',
+    shortName: 'Ge',
+    description: 'Modelos Gemini do Google, com camada gratuita no AI Studio.',
+    defaultModel: 'gemini-2.5-flash',
+    suggestedModels: ['gemini-2.5-flash', 'gemini-2.5-pro'],
+    supported: true,
+    configurationHint: 'Crie uma chave gratuita no Google AI Studio (começa com AIza).',
+    documentationUrl: 'https://ai.google.dev/gemini-api/docs/openai',
+  },
+  {
+    id: 'grok',
+    name: 'Grok',
+    label: 'Grok',
+    shortName: 'Gx',
+    description: 'Modelos Grok da xAI.',
+    defaultModel: 'grok-3-mini',
+    suggestedModels: ['grok-3-mini', 'grok-3'],
+    supported: true,
+    configurationHint: 'Use uma chave da API da xAI (começa com xai-).',
+    documentationUrl: 'https://docs.x.ai/',
+  },
+  {
+    id: 'ollama',
+    name: 'Ollama local',
+    label: 'Ollama local',
+    shortName: 'Ol',
+    description: 'Modelos rodando na sua máquina. Grátis, privado e sem internet.',
+    defaultModel: 'qwen2.5-coder:7b',
+    suggestedModels: ['qwen2.5-coder:7b', 'llama3.2:3b', 'deepseek-coder-v2:16b'],
+    supported: true,
+    local: true,
+    configurationHint:
+      'Instale o Ollama (ollama.com), baixe um modelo com "ollama pull <modelo>" e mantenha-o aberto. Não precisa de chave.',
+    documentationUrl: 'https://ollama.com/library',
+  },
+  {
     id: 'copilot',
     name: 'Copilot',
     label: 'Copilot',
@@ -78,18 +118,6 @@ export const PROVIDERS: ProviderDefinition[] = [
     configurationHint:
       'Integração pendente do SDK oficial e do fluxo de autenticação do GitHub Copilot.',
     documentationUrl: 'https://github.com/github/copilot-sdk',
-  },
-  {
-    id: 'grok',
-    name: 'Grok',
-    label: 'Grok',
-    shortName: 'Gx',
-    description: 'Espaço reservado para a integração dos modelos Grok da xAI.',
-    defaultModel: 'grok-3-mini',
-    suggestedModels: ['grok-3-mini', 'grok-3'],
-    supported: false,
-    configurationHint: 'A integração da xAI será habilitada quando o conector oficial estiver pronto.',
-    documentationUrl: 'https://docs.x.ai/',
   },
 ];
 

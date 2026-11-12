@@ -7,6 +7,10 @@ Cada espaço mantém sua própria configuração e conversa. Sem chave e modelo 
 | Boteco de IA | OpenRouter, `POST /api/v1/chat/completions` | Chave OpenRouter | Chat direto com o modelo escolhido; sem extensão Continue |
 | Codex | OpenAI, `POST /v1/responses` | Chave OpenAI API | Espaço de assistência via API; sem runtime, ferramentas ou sessões do agente Codex |
 | Claude (Anthropic) | Anthropic, `POST /v1/messages` | Chave da API Anthropic | Chat via Messages; sem aplicativo Claude ou Claude Code embutido |
+| Gratuitos | OpenRouter, apenas modelos `:free` | Chave OpenRouter (reaproveita a do OpenRouter) | Sem custo; lista ao vivo |
+| Google Gemini | `POST /v1beta/openai/chat/completions` (endpoint compatível com OpenAI) | Chave do Google AI Studio (`AIza…`) | Camada gratuita sujeita às cotas da conta |
+| Grok | xAI, `POST /v1/chat/completions` | Chave xAI (`xai-…`) | Depende do plano da conta |
+| Ollama local | `http://127.0.0.1:11434/v1/chat/completions` | Nenhuma | Roda na sua máquina; o daemon e o modelo precisam estar instalados |
 | Copilot | Reservado | Ainda não solicitado pela integração | Envio indisponível até implementar e validar SDK e autenticação oficiais |
 
 Os modelos são identificadores configuráveis e dependem do catálogo e do acesso da conta. A aplicação não garante um modelo por causa do nome do espaço. API key e assinatura de um aplicativo são mecanismos distintos; o projeto não extrai sessões do navegador nem reaproveita credenciais dos aplicativos oficiais.

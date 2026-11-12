@@ -14,7 +14,9 @@ test('abre na Central de IA sem erros no console', async ({ page }) => {
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'IA de graça, sem cartão.' })).toBeVisible();
-  await expect(page.getByText('Monitor de IA')).toBeVisible();
+  await expect(page.getByText('Uso e gastos de IA')).toBeHidden();
+  await page.getByRole('button', { name: 'Alternar monitor de IA' }).click();
+  await expect(page.getByText('Uso e gastos de IA')).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -42,14 +44,15 @@ test('desfazer funciona depois de formatar', async ({ page }) => {
   await expect(page.locator('.monaco-editor .view-lines')).toContainText('let x=1');
 });
 
-test('abas preservam o conteúdo e o visual terminal troca o tema do editor', async ({ page }) => {
+test('abas preservam o conteúdo e o tema claro troca o tema do editor', async ({ page }) => {
   await openMainTs(page);
   await page.getByTitle('styles.css').click();
-  await expect(page.locator('.monaco-editor .view-lines')).toContainText('--noite');
+  await expect(page.locator('.monaco-editor .view-lines')).toContainText('--fosforo');
   await page.getByRole('button', { name: 'main.ts', exact: true }).click();
   await expect(page.locator('.monaco-editor .view-lines')).toContainText('Companheiro');
-  await page.getByRole('button', { name: /moderno/ }).click();
-  await expect(page.locator('.monaco-editor')).toHaveCSS('background-color', 'rgb(7, 10, 6)');
+  await expect(page.locator('.monaco-editor')).toHaveCSS('background-color', 'rgb(31, 32, 35)');
+  await page.getByRole('button', { name: 'Alternar tema' }).click();
+  await expect(page.locator('.monaco-editor')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
 });
 
 test('painéis redimensionam arrastando e o terminal abre com Ctrl+`', async ({ page }) => {

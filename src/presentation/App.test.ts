@@ -26,9 +26,10 @@ const editorText = () => (screen.getByLabelText('editor') as HTMLTextAreaElement
 describe('App · casca do editor', () => {
   it('abre na Central de IA com o Monitor ao lado', () => {
     render(App);
-    expect(screen.getByRole('button', { name: /Central IA/ })).toBeTruthy();
-    expect(screen.getByText('Monitor de IA')).toBeTruthy();
-    expect(screen.getByText(/0 de 4 IAs conectadas/)).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: 'Agentes' }).length).toBeGreaterThan(1);
+    expect(screen.getByRole('tab', { name: /Gratuitos/ })).toBeTruthy();
+    expect(screen.queryByText('Uso e gastos de IA')).toBeNull();
+    expect(screen.getByText(/0 de 7 IAs conectadas/)).toBeTruthy();
   });
 
   it('explora o projeto de exemplo, abre pastas e filtra arquivos', async () => {
@@ -94,10 +95,10 @@ describe('App · casca do editor', () => {
   it('fecha a aba ativa com Ctrl W e oferece um botão visível de fechar', async () => {
     const user = await openExample();
     await openFile(user, 'README.md');
-    expect(screen.getByRole('button', { name: 'Fechar aba ativa' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Fechar README.md' })).toBeTruthy();
     await user.keyboard('{Control>}w{/Control}');
     expect(screen.queryByRole('button', { name: 'Fechar README.md' })).toBeNull();
-    expect(screen.getByRole('button', { name: /Central IA/ })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: 'Agentes' })[0]).toBeTruthy();
   });
 
   it('atalhos: Ctrl+B lateral, Ctrl+` terminal, Ctrl+K comandos, Esc fecha', async () => {
@@ -122,7 +123,7 @@ describe('App · casca do editor', () => {
 
   it('aba Git na prévia explica que roda no app instalado', async () => {
     const user = await openExample();
-    await user.click(screen.getByRole('tab', { name: /Git/ }));
+    await user.click(screen.getByRole('button', { name: 'Controle de versão' }));
     expect(screen.getByText(/O Git funciona no aplicativo instalado/)).toBeTruthy();
   });
 
@@ -148,11 +149,22 @@ describe('App · casca do editor', () => {
     expect((document.querySelector('.workbench') as HTMLElement).style.getPropertyValue('--sidebar-w')).toBe('160px');
   });
 
-  it('visual terminal antigo liga e é lembrado', async () => {
+  it('tema escuro é o padrão, alterna para o claro e é lembrado', async () => {
     render(App);
-    await userEvent.setup().click(screen.getByRole('button', { name: /moderno/ }));
-    expect(document.querySelector('.app-shell')?.classList.contains('retro')).toBe(true);
-    expect(localStorage.getItem('cmb.retro')).toBe('true');
+    const shell = () => document.querySelector('.app-shell') as HTMLElement;
+    expect(shell().dataset.theme).toBe('dark');
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Alternar tema' }));
+    expect(shell().dataset.theme).toBe('light');
+    expect(localStorage.getItem('cmb.theme')).toBe('light');
+  });
+
+  it('o monitor de gastos fica fechado e abre pela barra de status', async () => {
+    render(App);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Alternar monitor de IA' }));
+    expect(screen.getByText('Uso e gastos de IA')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Fechar monitor' }));
+    expect(screen.queryByText('Uso e gastos de IA')).toBeNull();
   });
 
   it('configurações de chave ficam bloqueadas na prévia do navegador', async () => {

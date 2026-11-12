@@ -39,15 +39,24 @@ pub enum Provider {
     Copilot,
     /// "Modal minha vida": only free models, routed through OpenRouter.
     MinhaVida,
+    /// Google Gemini through its OpenAI-compatible endpoint.
+    Google,
+    /// xAI Grok (OpenAI-compatible).
+    Grok,
+    /// Local Ollama daemon on loopback. Needs no key and costs nothing.
+    Ollama,
 }
 
 impl Provider {
-    pub const ALL: [Self; 5] = [
+    pub const ALL: [Self; 8] = [
         Self::OpenRouter,
         Self::OpenAI,
         Self::Anthropic,
         Self::Copilot,
         Self::MinhaVida,
+        Self::Google,
+        Self::Grok,
+        Self::Ollama,
     ];
 
     #[cfg_attr(not(windows), allow(dead_code))]
@@ -58,7 +67,15 @@ impl Provider {
             Self::Anthropic => "anthropic",
             Self::Copilot => "copilot",
             Self::MinhaVida => "minhavida",
+            Self::Google => "google",
+            Self::Grok => "grok",
+            Self::Ollama => "ollama",
         }
+    }
+
+    /// Local providers run on this machine and never take an API key.
+    pub fn keyless(self) -> bool {
+        self == Self::Ollama
     }
 
     pub fn require_supported(self) -> AppResult<()> {
@@ -85,7 +102,9 @@ impl Provider {
             Self::OpenRouter | Self::MinhaVida => &["sk-or-"],
             Self::Anthropic => &["sk-ant-"],
             Self::OpenAI => &["sk-"],
-            Self::Copilot => &[],
+            Self::Google => &["AIza"],
+            Self::Grok => &["xai-"],
+            Self::Copilot | Self::Ollama => &[],
         }
     }
 }
@@ -109,6 +128,7 @@ mod tests {
         }
         assert!(Provider::Copilot.require_supported().is_err());
         assert!(Provider::MinhaVida.require_supported().is_ok());
+        assert!(Provider::Ollama.keyless() && !Provider::Google.keyless());
     }
 
     #[test]
@@ -116,7 +136,7 @@ mod tests {
         for provider in Provider::ALL {
             assert_eq!(
                 provider.key_prefixes().is_empty(),
-                provider == Provider::Copilot
+                matches!(provider, Provider::Copilot | Provider::Ollama)
             );
         }
     }

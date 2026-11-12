@@ -51,7 +51,7 @@ describe('Central de IA', () => {
     expect((screen.getByPlaceholderText(/Configure a chave/) as HTMLTextAreaElement).disabled).toBe(true);
   });
 
-  it('lista só modelos gratuitos agrupados por empresa no Modal minha vida', async () => {
+  it('lista só modelos gratuitos agrupados por empresa no Gratuitos', async () => {
     setup();
     await waitFor(() => expect(screen.getByRole('option', { name: 'Llama' })).toBeTruthy());
     expect(screen.queryByRole('option', { name: /GPT mini/ })).toBeNull();
@@ -136,7 +136,7 @@ describe('Central de IA', () => {
     await screen.findByText('só aqui');
     await user.click(screen.getByRole('tab', { name: /Codex/ }));
     expect(screen.queryByText('só aqui')).toBeNull();
-    await user.click(screen.getByRole('tab', { name: /Modal minha vida/ }));
+    await user.click(screen.getByRole('tab', { name: /Gratuitos/ }));
     expect(screen.getByText('só aqui')).toBeTruthy();
     await user.click(screen.getByRole('button', { name: /Nova conversa/ }));
     expect(screen.queryByText('só aqui')).toBeNull();
@@ -156,5 +156,64 @@ describe('Central de IA', () => {
     ai.requests.set([{ id: '1', time: Date.now(), provider: 'openai', model: 'm', status: 'ok', inputTokens: 1, outputTokens: 1, costUsd: 2, estimated: false, latencyMs: 1 }]);
     setup();
     expect(screen.getByText('limite de hoje atingido')).toBeTruthy();
+  });
+});
+
+describe('Blend de agentes', () => {
+  const reply = (text: string) => ({ text, model: 'm', inputTokens: 10, outputTokens: 5, costUsd: 0, latencyMs: 100 });
+  beforeEach(() => {
+    ai.blendSteps.set([]);
+    ai.blendResult.set(null);
+    ai.blendTask.set('');
+    ai.blendFreeOnly.set(true);
+  });
+
+  it('sem provedor gratuito conectado explica o que falta e bloqueia a execução', async () => {
+    const { user } = setup();
+    await user.click(screen.getByRole('button', { name: /Blend de agentes/ }));
+    expect(screen.getByText(/Conecte ao menos um provedor gratuito/)).toBeTruthy();
+    expect((screen.getByRole('button', { name: /Executar blend/ }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('monta as 3 etapas sozinho, executa em sequência e mostra o total', async () => {
+    connect('minhavida', 'ollama');
+    gateway.chat
+      .mockResolvedValueOnce(reply('PLANO PRONTO'))
+      .mockResolvedValueOnce(reply('CODIGO PRONTO'))
+      .mockResolvedValueOnce(reply('REVISAO PRONTA'));
+    const { user } = setup();
+    await user.click(screen.getByRole('button', { name: /Blend de agentes/ }));
+    expect(screen.getByLabelText('Provedor do Arquiteto')).toBeTruthy();
+    expect(screen.getByLabelText('Provedor do Desenvolvedor')).toBeTruthy();
+    expect(screen.getByLabelText('Provedor do Revisor')).toBeTruthy();
+    await user.type(screen.getByLabelText('Tarefa'), 'criar login');
+    await user.click(screen.getByRole('button', { name: /Executar blend/ }));
+    expect(await screen.findByText('REVISAO PRONTA')).toBeTruthy();
+    expect(screen.getByText('PLANO PRONTO')).toBeTruthy();
+    expect(screen.getByText('CODIGO PRONTO')).toBeTruthy();
+    expect(gateway.chat).toHaveBeenCalledTimes(3);
+    expect(screen.getByText(/Total do blend/)).toBeTruthy();
+    expect(get(ai.requests)).toHaveLength(3);
+  });
+
+  it('mostra o erro da etapa que falhou e mantém o que já foi feito', async () => {
+    connect('minhavida', 'ollama');
+    gateway.chat.mockResolvedValueOnce(reply('PLANO PRONTO')).mockRejectedValueOnce(new Error('Ollama fora do ar'));
+    const { user } = setup();
+    await user.click(screen.getByRole('button', { name: /Blend de agentes/ }));
+    await user.type(screen.getByLabelText('Tarefa'), 'x');
+    await user.click(screen.getByRole('button', { name: /Executar blend/ }));
+    expect((await screen.findByRole('alert')).textContent).toContain('Ollama fora do ar');
+    expect(screen.getByText('PLANO PRONTO')).toBeTruthy();
+  });
+
+  it('modo só gratuito não oferece provedor pago e nunca o chama', async () => {
+    connect('minhavida', 'ollama', 'anthropic');
+    const { user } = setup();
+    await user.click(screen.getByRole('button', { name: /Blend de agentes/ }));
+    const select = screen.getByLabelText('Provedor do Arquiteto') as HTMLSelectElement;
+    const claude = [...select.options].find((o) => o.value === 'anthropic')!;
+    expect(claude.disabled).toBe(true);
+    expect(get(ai.blendSteps).every((step) => step.provider === 'ollama' || step.provider === 'minhavida')).toBe(true);
   });
 });
