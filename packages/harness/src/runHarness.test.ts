@@ -23,4 +23,15 @@ describe('runHarness', () => {
     const result = runHarness({ text: 'Envie a chave PIX do cliente.' });
     expect(result.findings.some((f) => f.kind === 'bank_keyword')).toBe(true);
   });
+
+  it('sempre devolve uma mensagem para o humano, qualquer que seja o veredito', () => {
+    const limpo = runHarness({ text: 'Explique um parser.' });
+    const sujo = runHarness({ text: 'CPF 123.456.789-09', strict: true });
+    const medio = runHarness({ text: 'Contato: alguem@exemplo.com', strict: true });
+    for (const result of [limpo, sujo, medio]) {
+      expect(typeof result.userMessage).toBe('string');
+      expect(result.userMessage.length).toBeGreaterThan(0);
+    }
+    expect(medio.verdict).toBe('needs_review');
+  });
 });

@@ -16,6 +16,8 @@ import {
   type SquadRole,
 } from '../domain/squad-plan';
 import { isFree, runBlend, suggestBlend, type BlendResult, type BlendStep, type BlendStepResult } from '../domain/agent-blend';
+import { findingLabel, inspectOutbound } from '../application/harness-gate';
+import type { SensitiveFinding } from '@donkey/harness';
 import {
   estimateCost,
   startOfDay,
@@ -54,6 +56,8 @@ export interface UiMessage {
   /** What the user typed, when a file was attached as context. */
   display?: string;
   attachment?: string;
+  /** The Harness replaced sensitive excerpts before this left the machine. */
+  redacted?: boolean;
   meta?: Pick<
     AiRequest,
     'model' | 'inputTokens' | 'outputTokens' | 'costUsd' | 'estimated' | 'latencyMs'
@@ -81,6 +85,24 @@ export const providerStatus = writable<Record<ProviderId, { configured: boolean;
 export const conversations = writable<Record<ProviderId, UiMessage[]>>(emptyByProvider(() => []));
 export const pending = writable<Partial<Record<ProviderId, boolean>>>({});
 export const chatErrors = writable<Partial<Record<ProviderId, string>>>({});
+
+/* ---------- Harness: nothing reaches a Grau 33 provider without this gate (ADR-006) ---------- */
+export interface AuditRequest {
+  provider: ProviderId;
+  verdict: 'needs_review' | 'blocked';
+  message: string;
+  findings: SensitiveFinding[];
+  /** Exactly what goes out if the human confirms: redacted, never the original. */
+  safeText: string;
+  /** What the human typed, for the chat bubble. */
+  display: string;
+  attachment?: string;
+  redactedCount: number;
+}
+
+/** Pending audit per provider; the send only resumes with an explicit human confirmation. */
+export const auditRequests = writable<Partial<Record<ProviderId, AuditRequest>>>({});
+export { findingLabel };
 export const requests = persisted<AiRequest[]>('requests', [], (list) => list.slice(-3000));
 export const activity = persisted<Activity[]>('activity', [], (list) => list.slice(-400));
 export const dailyBudget = persisted<number>('budget', 0);
@@ -136,7 +158,11 @@ export interface Attachment {
   content: string;
 }
 
-/** Sends one message. Only the transcript of this chat (plus an explicitly attached file) leaves the app. */
+/**
+ * Sends one message. Only the transcript of this chat (plus an explicitly attached file) leaves
+ * the app, and only after the Harness clears it. Any verdict other than `safe` opens an audit
+ * request instead of calling the provider.
+ */
 export async function send(text: string, attachment?: Attachment, ignoreBudget = false) {
   const id = get(selectedProvider);
   const provider = getProvider(id);
@@ -150,15 +176,78 @@ export async function send(text: string, attachment?: Attachment, ignoreBudget =
     }));
     return;
   }
-  const model = get(models)[id].trim();
   const fullContent = attachment
     ? `Arquivo em contexto: ${attachment.name}\n\`\`\`${attachment.language}\n${attachment.content}\n\`\`\`\n\n${content}`
     : content;
+
+  const decision = inspectOutbound(fullContent, id, 'chat');
+  if (!decision.allowed) {
+    const findings = decision.outcome?.findings ?? [];
+    auditRequests.update((map) => ({
+      ...map,
+      [id]: {
+        provider: id,
+        verdict: decision.verdict === 'blocked' ? 'blocked' : 'needs_review',
+        message: decision.message,
+        findings,
+        safeText: decision.textToSend,
+        display: content,
+        attachment: attachment?.name,
+        redactedCount: decision.outcome?.redactedCount ?? 0,
+      } satisfies AuditRequest,
+    }));
+    chatErrors.update((e) => ({ ...e, [id]: '' }));
+    track('ai', `Harness barrou o envio ao ${provider.name} · ${findings.length} achado(s)`);
+    return;
+  }
+
+  clearAudit(id);
+  await deliver(id, decision.textToSend, content, attachment?.name, false);
+}
+
+function clearAudit(id: ProviderId) {
+  auditRequests.update((map) => {
+    if (!map[id]) return map;
+    const next = { ...map };
+    delete next[id];
+    return next;
+  });
+}
+
+/** The human reviewed the findings and released the redacted version. Never the original. */
+export async function confirmAudit(id: ProviderId = get(selectedProvider)) {
+  const request = get(auditRequests)[id];
+  if (!request || get(pending)[id]) return;
+  clearAudit(id);
+  track(
+    'ai',
+    `Auditar solicitação: liberada a versão redigida para ${getProvider(id).name} (${request.redactedCount} trecho(s))`,
+  );
+  await deliver(id, request.safeText, request.display, request.attachment, true);
+}
+
+/** Drops the pending send. Nothing left the machine. */
+export function cancelAudit(id: ProviderId = get(selectedProvider)) {
+  if (!get(auditRequests)[id]) return;
+  clearAudit(id);
+  track('ai', `Auditar solicitação: envio cancelado pelo humano (${getProvider(id).name})`);
+}
+
+async function deliver(
+  id: ProviderId,
+  contentToSend: string,
+  display: string,
+  attachmentName: string | undefined,
+  redacted: boolean,
+) {
+  const provider = getProvider(id);
+  const model = get(models)[id].trim();
   const user: UiMessage = {
     role: 'user',
-    content: fullContent,
-    display: content,
-    attachment: attachment?.name,
+    content: contentToSend,
+    display,
+    attachment: attachmentName,
+    redacted,
   };
   const history = [...get(conversations)[id], user];
   conversations.update((c) => ({ ...c, [id]: history }));
@@ -191,7 +280,7 @@ export async function send(text: string, attachment?: Attachment, ignoreBudget =
         time: started,
         provider: id,
         status: 'ok',
-        contextFile: attachment?.name,
+        contextFile: attachmentName,
         ...meta,
       },
     ]);
@@ -292,6 +381,11 @@ function makeChat() {
       throw new Error('provedor sem chave configurada');
     if (!isFree(provider) && get(overBudget))
       throw new Error('limite de gasto de hoje atingido');
+    // Fail-closed: numa execução automática não há quem audite, então achado interrompe a etapa.
+    for (const message of messages) {
+      const decision = inspectOutbound(message.content, provider, 'blend');
+      if (!decision.allowed) throw new Error(decision.message);
+    }
     const started = Date.now();
     try {
       const reply = await gateway.chat(provider, model, messages);

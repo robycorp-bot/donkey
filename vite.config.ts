@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { svelteTesting } from '@testing-library/svelte/vite';
@@ -5,6 +6,12 @@ import { svelteTesting } from '@testing-library/svelte/vite';
 export default defineConfig({
   plugins: [svelte(), svelteTesting()],
   clearScreen: false,
+  resolve: {
+    alias: {
+      // O Harness é fonte TypeScript no monorepo; sem build intermediário.
+      '@donkey/harness': fileURLToPath(new URL('./packages/harness/src/index.ts', import.meta.url)),
+    },
+  },
   server: {
     host: '127.0.0.1',
     port: 1420,

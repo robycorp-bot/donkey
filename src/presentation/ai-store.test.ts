@@ -164,6 +164,85 @@ describe('ai-store · envio', () => {
   });
 });
 
+describe('ai-store · Harness antes do Grau 33', () => {
+  const reply = {
+    text: 'ok',
+    model: 'gpt-4.1-mini',
+    inputTokens: 10,
+    outputTokens: 10,
+    costUsd: 0,
+    latencyMs: 10,
+  };
+
+  it('não chama o provedor quando o Harness acha dado sensível', async () => {
+    const store = await fresh();
+    await configured(store);
+    store.selectedProvider.set('openai');
+    await store.send('Analise o cadastro de 123.456.789-09 por favor.');
+    expect(gateway.chat).not.toHaveBeenCalled();
+    const audit = get(store.auditRequests).openai!;
+    expect(audit.verdict).toBe('blocked');
+    expect(audit.findings.some((f) => f.kind === 'cpf')).toBe(true);
+    expect(audit.safeText).toContain('[REDACTED:cpf]');
+    expect(get(store.conversations).openai).toHaveLength(0);
+  });
+
+  it('envia apenas a versão redigida depois da confirmação humana', async () => {
+    const store = await fresh();
+    await configured(store);
+    store.selectedProvider.set('openai');
+    gateway.chat.mockResolvedValue(reply);
+    await store.send('Analise o cadastro de 123.456.789-09 por favor.');
+    await store.confirmAudit('openai');
+
+    expect(gateway.chat).toHaveBeenCalledTimes(1);
+    const [, , messages] = gateway.chat.mock.calls[0];
+    expect(messages[0].content).toContain('[REDACTED:cpf]');
+    expect(JSON.stringify(messages)).not.toContain('123.456.789-09');
+    expect(get(store.auditRequests).openai).toBeUndefined();
+
+    const conversation = get(store.conversations).openai;
+    expect(conversation[0].redacted).toBe(true);
+    // A bolha mostra o que o humano digitou; o que saiu foi o texto redigido.
+    expect(conversation[0].display).toContain('123.456.789-09');
+    expect(conversation[0].content).not.toContain('123.456.789-09');
+  });
+
+  it('cancelar descarta o envio sem tocar no provedor', async () => {
+    const store = await fresh();
+    await configured(store);
+    store.selectedProvider.set('openai');
+    await store.send('Pix do cliente, por favor.');
+    expect(get(store.auditRequests).openai).toBeDefined();
+    store.cancelAudit('openai');
+    expect(get(store.auditRequests).openai).toBeUndefined();
+    expect(gateway.chat).not.toHaveBeenCalled();
+  });
+
+  it('texto limpo segue íntegro, sem resumo nem redação', async () => {
+    const store = await fresh();
+    await configured(store);
+    store.selectedProvider.set('openai');
+    gateway.chat.mockResolvedValue(reply);
+    await store.send('Explique como ler um XML grande em streaming.');
+    const [, , messages] = gateway.chat.mock.calls[0];
+    expect(messages[0].content).toBe('Explique como ler um XML grande em streaming.');
+    expect(get(store.conversations).openai[0].redacted).toBe(false);
+  });
+
+  it('destino local (Ollama) não passa pela auditoria', async () => {
+    const store = await fresh();
+    await configured(store, ['ollama']);
+    store.selectedProvider.set('ollama');
+    gateway.chat.mockResolvedValue({ ...reply, model: 'qwen2.5-coder:7b' });
+    await store.send('Confira o CPF 123.456.789-09 neste teste local.');
+    expect(gateway.chat).toHaveBeenCalledTimes(1);
+    const [, , messages] = gateway.chat.mock.calls[0];
+    expect(messages[0].content).toContain('123.456.789-09');
+    expect(get(store.auditRequests).ollama).toBeUndefined();
+  });
+});
+
 describe('ai-store · persistência', () => {
   it('guarda requisições, limite, ações e modelos entre aberturas do app', async () => {
     let store = await fresh();

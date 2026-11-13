@@ -1960,6 +1960,141 @@ textarea.text-field {
 .terminal-quick select { background: var(--surface-2); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius); padding: 2px 6px; font: inherit; }
 
 .aic-providers button { padding: 0 9px; gap: 6px; }
-.aic-mark { width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; background: var(--surface-3); font-size: 11px; font-weight: 700; line-height: 1; }
-.aic-providers button.on .aic-mark { background: var(--primary); color: var(--primary-ink); }
+.aic-mark {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-3);
+  box-shadow: inset 0 0 0 1px var(--line);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.provider-logo {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  display: block;
+}
+[data-theme='dark'] .provider-logo.mono {
+  filter: invert(1);
+}
 .aic-avatar.logo { background: transparent; }
+
+/* Harness · auditar solicitação antes do Grau 33 */
+.aic-attach.redacted {
+  color: var(--warn);
+}
+.aic-audit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 16px 10px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--warn) 55%, var(--line));
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--warn) 10%, var(--surface));
+}
+.aic-audit.blocked {
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--line));
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+}
+.aic-audit-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+}
+.aic-audit-dest {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+}
+.aic-audit-msg {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.aic-audit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 140px;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.aic-audit-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.aic-audit-list code {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.aic-audit-kind {
+  color: var(--text);
+}
+.aic-sev {
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--surface-3);
+  color: var(--muted);
+}
+.aic-sev.high {
+  background: color-mix(in srgb, var(--danger) 22%, transparent);
+  color: var(--danger);
+}
+.aic-sev.medium {
+  background: color-mix(in srgb, var(--warn) 22%, transparent);
+  color: var(--warn);
+}
+.aic-audit-preview summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--muted);
+}
+.aic-audit-preview pre {
+  max-height: 180px;
+  overflow: auto;
+  margin: 8px 0 0;
+  padding: 10px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+.aic-audit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.aic-audit-actions button {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+.aic-audit-actions .aic-audit-go {
+  border-color: transparent;
+  background: var(--cta-grad);
+  color: var(--primary-ink);
+  font-weight: 600;
+}
+.aic-audit-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

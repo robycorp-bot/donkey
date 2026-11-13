@@ -32,7 +32,6 @@
     moon: 'M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z',
     minimize: 'M5 12h14',
     maximize: 'M5 5h14v14H5V5Z',
-    agents: 'M12 3v4m0 10v4M3 12h4m10 0h4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z',
     wallet: 'M3 7h16v12H3V7Zm0 0V5h13M15 13h4',
   };
 </script>

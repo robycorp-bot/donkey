@@ -13,7 +13,16 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "types": ["vite/client", "node"],
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@donkey/harness": ["./packages/harness/src/index.ts"]
+    }
   },
-  "include": ["src/**/*.ts", "src/**/*.svelte", "vite.config.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.svelte",
+    "vite.config.ts",
+    "packages/harness/src/**/*.ts"
+  ]
 }

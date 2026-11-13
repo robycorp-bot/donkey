@@ -742,7 +742,7 @@
         on:click={() => {
           showHome = true;
           showPreview = false;
-        }}><Icon name="agents" size={20} /><span>Agentes</span></button
+        }}><span>Agentes</span></button
       ><button
         class:on={showSidebar && sidebarView === 'files'}
         aria-label="Arquivos"
@@ -909,7 +909,7 @@
             on:click={() => {
               showHome = true;
               showPreview = false;
-            }}><Icon name="agents" size={14} />Agentes</button
+            }}>Agentes</button
           >{#each tabs as tab (tab.path)}<div
               class="tab-wrapper"
               class:chosen={!showHome && activePath === tab.path}
@@ -1266,7 +1266,7 @@
             on:click={() => {
               closeDialog();
               showHome = true;
-            }}><Icon name="agents" /><span>Ir para os agentes</span></button
+            }}><span>Ir para os agentes</span></button
           ><button
             on:click={() => {
               closeDialog();

@@ -2,7 +2,7 @@
 
 **Nome:** Donkey
 
-**Uma frase:** Editor e chat para desenvolvedores que atua como **meio de campo seguro** entre o seu código/dados e os modelos de linguagem (LLMs de terceiros), preservando qualidade do trabalho sem expor informação sigilosa.
+**Uma frase:** **Editor de código** completo e chat para desenvolvedores que atua como **meio de campo seguro** entre o seu código/dados e os modelos de linguagem (LLMs de terceiros), preservando qualidade do trabalho sem expor informação sigilosa.
 
 **Não é:**
 

@@ -1,6 +1,15 @@
 # Donkey
 
-Editor desktop (Tauri + Svelte + Monaco) com chat multi-provedor, pensado para **desenvolvedores**. O núcleo do produto é **segurança da informação** e **qualidade do que vai para LLMs de terceiros** (**Grau 33**), com meio de campo no pacote [`packages/harness/`](packages/harness/). Visão: [`docs/VISAO.md`](docs/VISAO.md).
+Editor desktop **de código** (Monaco, workspace, Git, terminal, execução npm) com chat multi-provedor, pensado para **desenvolvedores**. Além de IDE leve, o núcleo estratégico é **segurança da informação** e **qualidade do que vai para LLMs de terceiros** (**Grau 33**), com meio de campo em [`packages/harness/`](packages/harness/). Visão: [`docs/VISAO.md`](docs/VISAO.md). **Dev e instalação:** [`docs/DEV.md`](docs/DEV.md).
+
+### Comandos rápidos
+
+| Comando | Uso |
+| --- | --- |
+| `npm run setup` | Primeira vez após clone |
+| `npm run dev:app` | Desenvolver com hot reload |
+| `npm run ship` | Compilar, instalar e abrir no Windows |
+| `npm run build:app` | Só gerar instalador |
 
 Este repositório também embute a **fábrica multiagente** (`factory-ia/`) usada para governar o próprio desenvolvimento. O domínio do Donkey está em [`factory-ia/dominio/`](factory-ia/dominio/).
 

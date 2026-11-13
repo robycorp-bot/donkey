@@ -27,6 +27,7 @@ describe('App · casca do editor', () => {
   it('abre na Central de IA com o Monitor ao lado', () => {
     render(App);
     expect(screen.getAllByRole('button', { name: 'Agentes' }).length).toBeGreaterThan(1);
+    expect(document.querySelector('.icon-agents')).toBeNull();
     expect(screen.getByRole('tab', { name: /Gratuitos/ })).toBeTruthy();
     expect(screen.queryByText('Uso e gastos de IA')).toBeNull();
     expect(screen.getByText(/0 de 7 IAs conectadas/)).toBeTruthy();

@@ -13,8 +13,10 @@ O projeto é pessoal. O código não é publicado nem enviado ao GitHub automati
 Depois de alterar o código, execute na raiz:
 
 ```powershell
-.\scripts\reinstall.ps1
+npm run ship
 ```
+
+(Equivalente: `.\scripts\reinstall.ps1`. Guia completo: [`DEV.md`](DEV.md).)
 
 O fluxo roda o build de produção, fecha a cópia aberta, desinstala a versão registrada no Windows, instala o instalador mais recente e abre o aplicativo. Para apenas reinstalar o último instalador sem compilar, use `.\scripts\reinstall.ps1 -SkipBuild`; para deixar o aplicativo fechado, acrescente `-NoLaunch`.
 

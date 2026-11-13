@@ -5,9 +5,13 @@
   import { groupByCompany } from '../domain/workspace-tools';
   import { formatTokens, formatUsd, roughTokens, segments } from '../domain/ai-metrics';
   import {
+    auditRequests,
+    cancelAudit,
     catalog,
     catalogState,
     chatErrors,
+    confirmAudit,
+    findingLabel,
     clearConversation,
     conversations,
     freeModels,
@@ -43,6 +47,7 @@
   import { SQUAD_TITLES, addableRoles, type SquadRole } from '../domain/squad-plan';
   import Brain from './Brain.svelte';
   import Icon from './Icon.svelte';
+  import ProviderMark from './ProviderMark.svelte';
 
   export let isPreview = false;
   export let hasWorkspace = false;
@@ -64,6 +69,7 @@
   $: status = $providerStatus[id];
   $: messages = $conversations[id];
   $: busy = !!$pending[id];
+  $: audit = $auditRequests[id];
   $: if (id) void loadCatalog();
   $: freeGroups = groupByCompany($freeModels);
   $: companyPrefix = id === 'openai' ? 'openai/' : id === 'anthropic' ? 'anthropic/' : '';
@@ -171,7 +177,7 @@
       <button class:on={mode === 'chat'} aria-pressed={mode === 'chat'} on:click={() => (mode = 'chat')}
         ><Icon name="chat" size={14} />Conversa</button
       ><button class:on={mode === 'blend'} aria-pressed={mode === 'blend'} on:click={() => (mode = 'blend')}
-        ><Icon name="agents" size={14} />Blend de agentes</button
+        >Blend de agentes</button
       >
     </div>
     {#if mode === 'chat'}
@@ -183,7 +189,7 @@
             aria-label={item.name}
             title={item.name}
             on:click={() => selectedProvider.set(item.id)}
-            ><span class="aic-mark" aria-hidden="true">{item.name[0]}</span><span
+            ><span class="aic-mark"><ProviderMark id={item.id} name={item.name} /></span><span
               class="aic-dot"
               class:ok={$providerStatus[item.id]?.configured}
             ></span></button
@@ -285,6 +291,9 @@
                 {#if message.attachment}<span class="aic-attach"
                     ><Icon name="code" size={12} />{message.attachment}</span
                   >{/if}
+                {#if message.redacted}<span class="aic-attach redacted"
+                    ><Icon name="lock" size={12} />enviado redigido pelo Harness</span
+                  >{/if}
                 <p>{message.display ?? message.content}</p>
               </div>
             {:else}
@@ -325,6 +334,54 @@
         {#if $chatErrors[id]}<p class="aic-error" role="alert">{$chatErrors[id]}</p>{/if}
       </div>
     </div>
+
+    {#if audit}
+      <section class="aic-audit" class:blocked={audit.verdict === 'blocked'} role="alert">
+        <header class="aic-audit-head">
+          <Icon name="lock" size={14} />
+          <strong>{audit.verdict === 'blocked' ? 'Envio barrado' : 'Auditar solicitação'}</strong>
+          <span class="aic-audit-dest">Grau 33 · {provider.name}</span>
+        </header>
+        <p class="aic-audit-msg">{audit.message}</p>
+        {#if audit.findings.length}
+          <ul class="aic-audit-list">
+            {#each audit.findings as finding}
+              <li>
+                <span class="aic-sev {finding.severity}">{finding.severity}</span>
+                <span class="aic-audit-kind">{findingLabel(finding.kind)}</span>
+                <code>{finding.excerpt}</code>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+        <details class="aic-audit-preview">
+          <summary>Ver exatamente o que sairia desta máquina</summary>
+          <pre>{audit.safeText}</pre>
+        </details>
+        <div class="aic-audit-actions">
+          <button
+            type="button"
+            on:click={() => {
+              draft = audit.display;
+              cancelAudit(id);
+              input?.focus();
+            }}>Cancelar e editar</button
+          >
+          <button
+            type="button"
+            class="aic-audit-go"
+            disabled={busy}
+            on:click={() => {
+              void confirmAudit(id).catch(() => {});
+              void scrollDown();
+            }}
+            >Enviar versão redigida{audit.redactedCount
+              ? ` (${audit.redactedCount} trecho${audit.redactedCount > 1 ? 's' : ''})`
+              : ''}</button
+          >
+        </div>
+      </section>
+    {/if}
 
     <form class="aic-composer" class:locked={!status?.configured} on:submit|preventDefault={() => submit()}>
       <div class="aic-box">
@@ -418,7 +475,7 @@
           ><button class="ghost-button" disabled={$blendRunning} on:click={() => autoBlend()}
             ><Icon name="refresh" size={13} />Sugerir automaticamente</button
           ><button class="ghost-button" disabled={$blendRunning || $squadBusy || !$blendTask.trim()} on:click={() => void previewSquad()}
-            ><Icon name="agents" size={13} />{$squadBusy ? 'Mediador montando...' : 'Pré-visualizar squad'}</button
+            >{$squadBusy ? 'Mediador montando...' : 'Pré-visualizar squad'}</button
           ><button
             class="primary-button"
             disabled={$blendRunning || !$blendTask.trim() || !$blendSteps.length}
@@ -505,7 +562,9 @@
         {#each $blendResult?.results ?? $blendProgress?.done ?? [] as item}
           <article class="aic-answer">
             <div class="aic-answer-head">
-              <span class="aic-avatar">{stepLabel(item)[0]}</span>
+              <span class="aic-avatar logo"
+                ><ProviderMark id={item.provider} name={getProvider(item.provider).name} /></span
+              >
               <strong>{stepLabel(item)}</strong>
               <span class="aic-model-tag">{getProvider(item.provider).name} · {item.model}</span>
             </div>

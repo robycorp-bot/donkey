@@ -1,5 +1,5 @@
 import { detectSensitive } from './detectors/sensitive';
-import { MESSAGES } from './grau33';
+import { messageFor } from './grau33';
 import { redactText } from './pipeline/redact';
 import { summarizeLocally } from './pipeline/summarize';
 import type { HarnessInput, HarnessOutput, HarnessVerdict } from './types';
@@ -28,7 +28,7 @@ export function runHarness(input: HarnessInput): HarnessOutput {
     verdict,
     findings,
     safeText,
-    userMessage: MESSAGES[verdict],
+    userMessage: messageFor(verdict),
     redactedCount: count,
   };
 }

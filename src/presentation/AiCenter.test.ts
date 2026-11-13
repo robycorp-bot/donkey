@@ -37,6 +37,7 @@ beforeEach(() => {
   ai.selectedProvider.set('minhavida');
   ai.conversations.update((c) => Object.fromEntries(Object.keys(c).map((k) => [k, []])) as unknown as typeof c);
   ai.chatErrors.set({});
+  ai.auditRequests.set({});
   ai.providerStatus.update((s) => Object.fromEntries(Object.keys(s).map((k) => [k, { configured: false }])) as unknown as typeof s);
   ai.requests.set([]);
   ai.dailyBudget.set(0);
@@ -128,6 +129,29 @@ describe('Central de IA', () => {
     expect(box.value).toBe('tenta');
   });
 
+  it('cada provedor mostra a logo da marca no lugar da letra', () => {
+    setup();
+    const names = ['Gratuitos', 'OpenRouter', 'Codex', 'Claude', 'Google Gemini', 'Grok', 'Ollama local'];
+    const sources = new Set<string>();
+    for (const name of names) {
+      const tab = screen.getByRole('tab', { name });
+      const logo = tab.querySelector('img');
+      expect(logo?.getAttribute('alt')).toBe(name);
+      const src = logo?.getAttribute('src') ?? '';
+      const localFile = /providers\/[\w-]+\.svg(?:\?|$)/.test(src);
+      const inlined = src.startsWith('data:image/svg+xml');
+      expect(localFile || inlined).toBe(true);
+      expect(/^https?:/i.test(src)).toBe(false);
+      sources.add(src);
+      expect(tab.querySelector('.aic-mark')?.textContent?.trim()).toBe('');
+    }
+    const free = screen.getByRole('tab', { name: 'Gratuitos' }).querySelector('img')?.getAttribute('src');
+    const router = screen.getByRole('tab', { name: 'OpenRouter' }).querySelector('img')?.getAttribute('src');
+    expect(free).toBe(router);
+    expect(sources.size).toBe(names.length - 1);
+    expect(document.querySelector('.icon-agents')).toBeNull();
+  });
+
   it('trocar de provedor mantém conversas separadas e Nova conversa limpa', async () => {
     connect('minhavida', 'openai');
     gateway.chat.mockResolvedValue({ text: 'só aqui', model: 'm:free', inputTokens: 1, outputTokens: 1, costUsd: 0, latencyMs: 1 });
@@ -194,6 +218,12 @@ describe('Blend de agentes', () => {
     expect(gateway.chat).toHaveBeenCalledTimes(3);
     expect(screen.getByText(/Total do blend/)).toBeTruthy();
     expect(get(ai.requests)).toHaveLength(3);
+    const avatars = [...document.querySelectorAll('.aic-answer-head .aic-avatar')];
+    expect(avatars).toHaveLength(3);
+    for (const avatar of avatars) {
+      expect(avatar.textContent?.trim()).toBe('');
+      expect(['Gratuitos', 'Ollama local']).toContain(avatar.querySelector('img.provider-logo')?.getAttribute('alt'));
+    }
   });
 
   it('mostra o erro da etapa que falhou e mantém o que já foi feito', async () => {
@@ -215,5 +245,53 @@ describe('Blend de agentes', () => {
     const claude = [...select.options].find((o) => o.value === 'anthropic')!;
     expect(claude.disabled).toBe(true);
     expect(get(ai.blendSteps).every((step) => step.provider === 'ollama' || step.provider === 'minhavida')).toBe(true);
+  });
+});
+
+describe('Central de IA · auditar solicitação', () => {
+  it('mostra os achados do Harness e só envia a versão redigida após confirmação', async () => {
+    connect('minhavida');
+    gateway.chat.mockResolvedValue({
+      text: 'ok',
+      model: 'meta/llama:free',
+      inputTokens: 5,
+      outputTokens: 5,
+      costUsd: 0,
+      latencyMs: 20,
+    });
+    const { user } = setup();
+
+    await user.type(screen.getByPlaceholderText(/Peça, pergunte/), 'Revise o cadastro 123.456.789-09');
+    await user.click(screen.getByLabelText('Enviar'));
+
+    await waitFor(() => expect(screen.getByText('Envio barrado')).toBeTruthy());
+    expect(screen.getByText('CPF')).toBeTruthy();
+    expect(gateway.chat).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: /Enviar versão redigida/ }));
+    await waitFor(() => expect(gateway.chat).toHaveBeenCalledTimes(1));
+    const [, , messages] = gateway.chat.mock.calls[0];
+    expect(messages[0].content).toContain('[REDACTED:cpf]');
+    expect(screen.queryByText('Envio barrado')).toBeNull();
+  });
+
+  it('cancelar devolve o texto ao campo e não chama o provedor', async () => {
+    connect('minhavida');
+    const { user } = setup();
+    await user.type(screen.getByPlaceholderText(/Peça, pergunte/), 'Me manda a chave pix do cliente');
+    await user.click(screen.getByLabelText('Enviar'));
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Cancelar e editar' })).toBeTruthy(),
+    );
+    await user.click(screen.getByRole('button', { name: 'Cancelar e editar' }));
+
+    expect(gateway.chat).not.toHaveBeenCalled();
+    expect(get(ai.auditRequests).minhavida).toBeUndefined();
+    await waitFor(() =>
+      expect((screen.getByPlaceholderText(/Peça, pergunte/) as HTMLTextAreaElement).value).toBe(
+        'Me manda a chave pix do cliente',
+      ),
+    );
   });
 });
