@@ -16,6 +16,14 @@ na raiz. Abra sempre a **raiz do repositório**.
 
 Nenhum adaptador carrega stack de produto. Stack está em `factory-ia/dominio/STACK.md`.
 
+## MCP do Harness
+
+Todas as ferramentas acima podem chamar o filtro do produto pelo servidor MCP `donkey-harness`
+(`packages/mcp-harness/`), com `auditar_texto`, `sintetizar_dados` e `status_grau33`.
+Rode `npm run mcp:build` uma vez; o Claude Code já lê `.mcp.json` da raiz. Nas outras, aponte
+`node packages/mcp-harness/dist/server.mjs` na configuração de MCP da própria ferramenta.
+Isso é adaptador, não processo: a regra continua em `factory-ia/dominio/REGRAS.md`.
+
 ## Claude Code
 
 - `CLAUDE.md` importa o núcleo. Subagentes em `.claude/agents/` só apontam à ficha.

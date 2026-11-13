@@ -4,6 +4,8 @@ O projeto usa versões `MAJOR.MINOR.PATCH`. Durante `0.x`, os contratos e format
 
 ## Não lançado
 
+- Decisão: o Donkey não reusa credencial de outro aplicativo nem trata o login do Google como credencial de provedor; a execução passa a ser delegada ao CLI já autenticado na máquina (ADR-007, proposta — parte 2 espera o "sim" do humano).
+- Servidor MCP `donkey-harness` (`packages/mcp-harness`): expõe `auditar_texto`, `sintetizar_dados` e `status_grau33` a qualquer CLI de IA, por JSON-RPC sobre stdio e sem dependência externa. `.mcp.json` na raiz configura o Claude Code. A resposta nunca devolve o trecho sensível original, só tipo, severidade, posição e o texto redigido.
 - Harness ligado ao chat (ADR-006): toda mensagem para um provedor Grau 33 passa pela auditoria antes do HTTP. Veredito diferente de `safe` abre "auditar solicitação" com os achados, o trecho redigido e as opções cancelar ou enviar a versão redigida — o original nunca é oferecido para envio. Ollama local segue fora da auditoria por ser perímetro local; no Blend e no Squad, achado interrompe a etapa (fail-closed).
 - Terminal interativo de verdade (PTY + xterm.js): PowerShell, PowerShell 7, Prompt de Comando, Git Bash e WSL, com cores, histórico e CLIs interativos (claude, codex, ollama, npm init...). Só shells de uma lista fixa podem ser iniciados. O executor de um comando por vez continua apenas no modo navegador.
 - Squad de agentes: o mediador monta o squad (modelo gratuito, com fallback por palavras-chave), o preview em Markdown pode ser editado e aprovado, e "Executar squad" roda os agentes aprovados em sequência.

@@ -55,3 +55,13 @@ Os recursos do VS Code entram aos poucos nesta base (LSP, paleta de comandos, bu
 O núcleo do produto passa a ser **segurança e qualidade da informação** enviada a LLMs externos, não só leveza/custo. Decisão: biblioteca `packages/harness/` como gate (auditoria, redação, resumo local futuro, síntese estrutural) e nomenclatura **Grau 33** para provedores terceiros.
 
 Detalhe: [`adr/0006-harness-meio-de-campo.md`](adr/0006-harness-meio-de-campo.md).
+
+## ADR-007 — Execução delegada ao CLI local e MCP do Harness
+
+**Estado:** adotada em 2026-11-13, escopo uso pessoal com executável não compartilhado.
+
+O login do Google não serve de credencial comum: nessas ferramentas ele é só provedor de identidade, e quem emite a sessão é cada fornecedor. Decisão: o Donkey **nunca** reusa credencial de outro aplicativo e, no lugar disso, delega a execução ao **CLI já autenticado na máquina**, com o prompt liberado pelo `harness-gate` e o rastreio alimentado pela saída estruturada do CLI. O Harness também passa a ser servidor MCP para as demais ferramentas.
+
+Modelo de confiança: o Donkey vê tudo porque representa o desenvolvedor; o CLI delegado é braço de empresa terceira e só alcança o projeto pelas ferramentas de workspace do MCP do Donkey, com o conteúdo já auditado. Contenção obrigatória: raiz restrita e ferramentas nativas de arquivo negadas.
+
+Detalhe: [`adr/0007-execucao-via-cli-local.md`](adr/0007-execucao-via-cli-local.md).
