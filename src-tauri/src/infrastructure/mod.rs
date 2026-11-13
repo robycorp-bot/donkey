@@ -1,4 +1,5 @@
 pub mod credentials;
+pub mod executor;
 pub mod filesystem;
 pub mod git;
 pub mod process;
