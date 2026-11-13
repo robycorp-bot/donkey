@@ -50,9 +50,9 @@ test('abas preservam o conteúdo e o tema claro troca o tema do editor', async (
   await expect(page.locator('.monaco-editor .view-lines')).toContainText('--fosforo');
   await page.getByRole('button', { name: 'main.ts', exact: true }).click();
   await expect(page.locator('.monaco-editor .view-lines')).toContainText('Companheiro');
-  await expect(page.locator('.monaco-editor')).toHaveCSS('background-color', 'rgb(31, 32, 35)');
-  await page.getByRole('button', { name: 'Alternar tema' }).click();
   await expect(page.locator('.monaco-editor')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  await page.getByRole('button', { name: 'Alternar tema' }).click();
+  await expect(page.locator('.monaco-editor')).toHaveCSS('background-color', 'rgb(22, 25, 30)');
 });
 
 test('painéis redimensionam arrastando e o terminal abre com Ctrl+`', async ({ page }) => {

@@ -68,7 +68,7 @@ export function createPreviewGateway(): AppGateway {
     ],
     [
       `${PREVIEW_ROOT}/package.json`,
-      '{\n  "name": "donkey",\n  "private": true,\n  "description": "Prévia de um editor com alma retrô"\n}\n',
+      '{\n  "name": "donkey",\n  "private": true,\n  "description": "Prévia de um editor pessoal"\n}\n',
     ],
   ]);
   const directories = new Set([PREVIEW_ROOT, `${PREVIEW_ROOT}/src`]);

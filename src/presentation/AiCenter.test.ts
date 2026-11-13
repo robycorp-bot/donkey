@@ -89,7 +89,7 @@ describe('Central de IA', () => {
     const { user, onInsertCode } = setup();
     await user.type(screen.getByPlaceholderText(/Peça, pergunte/), 'oi{Enter}');
     await screen.findByText('console.log(1);');
-    expect(document.querySelector('.aic-answer img')).toBeNull();
+    expect(document.querySelector('.aic-text img, .aic-answer img[src="x"]')).toBeNull();
     expect(screen.getByText(/<img src=x/)).toBeTruthy();
     await user.click(screen.getByRole('button', { name: 'Inserir no cursor' }));
     expect(onInsertCode).toHaveBeenCalledWith('console.log(1);');

@@ -8,6 +8,8 @@
   import Icon from './Icon.svelte';
 
   export let cwd = '';
+  /** App shell theme — refreshes xterm colors when toggled. */
+  export let uiTheme: 'dark' | 'light' = 'light';
   export let onClose: () => void;
   export let onFilesChanged: () => void;
 
@@ -40,13 +42,20 @@
 
   function theme() {
     return {
-      background: css('--term-bg', '#1c2438'),
-      foreground: css('--term-fg', '#d3daea'),
-      cursor: '#d3daea',
-      cursorAccent: '#1c2438',
-      selectionBackground: '#6f8fc966',
+      background: css('--term-bg', '#12151a'),
+      foreground: css('--term-fg', '#d5dce3'),
+      cursor: css('--term-cursor', '#c5cdd6'),
+      cursorAccent: css('--term-cursor-accent', '#12151a'),
+      selectionBackground: css('--term-selection', '#a8b2bc55'),
     };
   }
+
+  function applyTermTheme() {
+    if (!term) return;
+    term.options.theme = theme();
+  }
+
+  $: uiTheme, applyTermTheme();
 
   /** After the user ran something, tell the app files may have changed once output settles. */
   function scheduleRefresh() {

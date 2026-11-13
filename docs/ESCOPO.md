@@ -2,7 +2,7 @@
 
 O arquivo [`struct/context-all-md`](../struct/context-all-md) descreve um editor próprio para uso pessoal: leve, escuro, com identidade retrô, IA acessível e uma organização orientada ao domínio. Ele orienta o produto; não equivale a uma especificação técnica fechada nem a evidência de que as integrações já existem.
 
-A orientação visual posterior do usuário substituiu o retrô por uma aparência mais próxima do macOS: limpa, com painéis arredondados, tipografia de sistema, controles próprios de janela e sem barra de atividades semelhante à do VS Code. O contexto original permanece preservado.
+A orientação visual posterior do usuário substituiu o retrô por uma aparência enterprise (prata/branco, chrome corporativo, tipografia de sistema). O contexto original permanece preservado.
 
 ## Decisões para começar
 

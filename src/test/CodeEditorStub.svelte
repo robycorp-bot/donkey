@@ -6,7 +6,6 @@
   export let openPaths: string[] = [];
   export let readOnly = false;
   export let visible = true;
-  export let retro = false;
   export let onChange: (path: string, value: string) => void;
   export let onPosition: (line: number, column: number) => void = () => {};
   export function insertText(text: string): boolean {
@@ -23,7 +22,6 @@
   aria-label="editor"
   data-path={path}
   data-language={language}
-  data-retro={String(retro)}
   readonly={readOnly}
   {value}
   on:input={(event) => onChange(path, event.currentTarget.value)}

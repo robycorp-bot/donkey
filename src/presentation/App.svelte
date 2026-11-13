@@ -1040,6 +1040,7 @@
           {:else}
             <PtyTerminal
               bind:this={terminal}
+              uiTheme={theme}
               cwd={workspace?.name ?? ''}
               onClose={() => (showTerminal = false)}
               onFilesChanged={reloadTree}

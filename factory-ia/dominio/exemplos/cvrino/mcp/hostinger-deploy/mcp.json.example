@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "hostinger-deploy": {
+      "command": "python",
+      "args": ["factory-ia/dominio/exemplos/cvrino/mcp/hostinger-deploy/server.py"],
+      "env": {
+        "PROJECT_ROOT": ".",
+        "CVRINO_PROJECT_ROOT": "."
+      }
+    }
+  }
+}

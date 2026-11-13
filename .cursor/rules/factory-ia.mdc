@@ -1,0 +1,11 @@
+---
+description: Fábrica de software (núcleo + domínio). Sempre ativa.
+alwaysApply: true
+---
+Antes de qualquer tarefa, leia factory-ia/AGENTS.md e siga.
+Depois leia factory-ia/dominio/MISSAO.md, factory-ia/dominio/STACK.md e factory-ia/dominio/REGRAS.md.
+Se tiverem [PREENCHER], você está na BASE: não invente produto e não gere código de aplicação.
+Para um papel, leia factory-ia/personas/ e declare [Papel] no início.
+Planejamento ou subagentes: leia factory-ia/PARALELO.md.
+Nível de modelo: factory-ia/config/modelos.yaml (coluna cursor).
+Caminhos relativos à raiz. Push, PR, merge e produção só com sim do humano.

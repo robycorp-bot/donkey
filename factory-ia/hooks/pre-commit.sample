@@ -1,0 +1,11 @@
+#!/bin/sh
+# Amostra. O projeto-filho instala se quiser (core.hooksPath ou .git/hooks).
+# Bloqueia o commit se o index tiver padrão óbvio de segredo. Não substitui o Git Agent.
+
+blocked='\.env$|\.env\.|config\.local\.|\.pem$|\.key$'
+if git diff --cached --name-only | grep -E "$blocked" >/dev/null; then
+  echo "pre-commit: recusado — arquivo de segredo no index."
+  git diff --cached --name-only | grep -E "$blocked"
+  exit 1
+fi
+exit 0

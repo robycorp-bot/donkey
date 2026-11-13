@@ -149,7 +149,7 @@ describe('App · casca do editor', () => {
     expect((document.querySelector('.workbench') as HTMLElement).style.getPropertyValue('--sidebar-w')).toBe('160px');
   });
 
-  it('tema clássico (claro, estilo Windows 98) é o padrão, alterna para o escuro e é lembrado', async () => {
+  it('tema claro é o padrão, alterna para o escuro e é lembrado', async () => {
     render(App);
     const shell = () => document.querySelector('.app-shell') as HTMLElement;
     expect(shell().dataset.theme).toBe('light');

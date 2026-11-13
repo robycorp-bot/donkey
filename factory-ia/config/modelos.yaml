@@ -1,0 +1,52 @@
+# Nível de modelo da fábrica — fonte única.
+# Personas pedem rapido | padrao | profundo. Cada ferramenta traduz.
+# Use o alias que a ferramenta aceita; confirme a versão atual no fornecedor
+# antes de piná-la num projeto-filho (o domínio pode sobrescrever em
+# factory-ia/dominio/GIT-E-DEPLOY.md se precisar de ID fixo).
+
+niveis:
+  rapido:
+    uso: triagem, git, documentação, integração simples
+    claude: haiku
+    gemini: flash
+    grok: fast
+    openai: mini
+    cursor: fast
+  padrao:
+    uso: código do dia a dia, product, QA, review, deploy
+    claude: sonnet
+    gemini: pro
+    grok: main
+    openai: main
+    cursor: default
+  profundo:
+    uso: CTO, arquitetura, banco, segurança, DevOps
+    claude: opus
+    gemini: pro-reasoning
+    grok: reasoning
+    openai: reasoning
+    cursor: premium
+
+# Ferramentas de chat único: o humano (ou o CTO) seleciona o modelo do nível
+# do papel que está sendo exercido. Não misture um papel profundo num modelo rápido
+# para “economizar” em veto de segurança ou arquitetura.
+
+personas:
+  triagem: rapido
+  cto: profundo
+  product: padrao
+  architect: profundo
+  backend: padrao
+  frontend: padrao
+  database: profundo
+  integration: rapido
+  qa: padrao
+  security: profundo
+  devops: profundo
+  documentation: rapido
+  reviewer: padrao
+  git: rapido
+  deploy: padrao
+
+triagem:
+  limite_segundos: 5
