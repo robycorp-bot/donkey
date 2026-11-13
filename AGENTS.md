@@ -4,7 +4,7 @@ Guia para qualquer agente de IA (Claude Code, Codex, modelos locais via Ollama e
 
 ## O projeto
 
-**Coder mega-brain** — editor/IDE pessoal para desenvolvimento com IA. Prioridades inegociáveis: **performance, integridade e leveza**. Núcleo com IAs locais e gratuitas (Ollama); provedores pagos (Claude, Codex, Grok, Google) são integrações opcionais. A ferramenta deve ser honesta sobre o que é gratuito e o que é pago.
+**Donkey** — editor/IDE pessoal para desenvolvimento com IA. Prioridades inegociáveis: **performance, integridade e leveza**. Núcleo com IAs locais e gratuitas (Ollama); provedores pagos (Claude, Codex, Grok, Google) são integrações opcionais. A ferramenta deve ser honesta sobre o que é gratuito e o que é pago.
 
 | Parte | Local | Stack |
 | --- | --- | --- |

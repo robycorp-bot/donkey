@@ -149,13 +149,13 @@ describe('App · casca do editor', () => {
     expect((document.querySelector('.workbench') as HTMLElement).style.getPropertyValue('--sidebar-w')).toBe('160px');
   });
 
-  it('tema escuro é o padrão, alterna para o claro e é lembrado', async () => {
+  it('tema clássico (claro, estilo Windows 98) é o padrão, alterna para o escuro e é lembrado', async () => {
     render(App);
     const shell = () => document.querySelector('.app-shell') as HTMLElement;
-    expect(shell().dataset.theme).toBe('dark');
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Alternar tema' }));
     expect(shell().dataset.theme).toBe('light');
-    expect(localStorage.getItem('cmb.theme')).toBe('light');
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Alternar tema' }));
+    expect(shell().dataset.theme).toBe('dark');
+    expect(localStorage.getItem('cmb.theme')).toBe('dark');
   });
 
   it('o monitor de gastos fica fechado e abre pela barra de status', async () => {

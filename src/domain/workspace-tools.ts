@@ -81,3 +81,13 @@ export function isStaged(change: GitChange): boolean {
 export function isUnstaged(change: GitChange): boolean {
   return change.worktree !== ' ';
 }
+
+/** Shells the native terminal can start (fixed list, validated again in Rust). */
+export type PtyShell = 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'wsl';
+export const PTY_SHELLS: { id: PtyShell; label: string }[] = [
+  { id: 'powershell', label: 'PowerShell' },
+  { id: 'pwsh', label: 'PowerShell 7' },
+  { id: 'cmd', label: 'Prompt de Comando' },
+  { id: 'bash', label: 'Git Bash' },
+  { id: 'wsl', label: 'WSL' },
+];

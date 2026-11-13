@@ -25,10 +25,22 @@
     blendRunning,
     blendSteps,
     blendTask,
+    addSquadMember,
+    previewSquad,
+    removeSquadMember,
+    runApprovedSquad,
     runBlendTask,
+    runSteps,
+    setSquadMember,
+    squadApproved,
+    squadBlockers,
+    squadBusy,
+    squadPlan,
+    squadPreview,
     type Attachment,
   } from './ai-store';
-  import { ROLE_LABELS, isFree } from '../domain/agent-blend';
+  import { isFree, stepLabel } from '../domain/agent-blend';
+  import { SQUAD_TITLES, addableRoles, type SquadRole } from '../domain/squad-plan';
   import Brain from './Brain.svelte';
   import Icon from './Icon.svelte';
 
@@ -168,8 +180,13 @@
             role="tab"
             aria-selected={id === item.id}
             class:on={id === item.id}
+            aria-label={item.name}
+            title={item.name}
             on:click={() => selectedProvider.set(item.id)}
-            ><span class="aic-dot" class:ok={$providerStatus[item.id]?.configured}></span>{item.name}</button
+            ><span class="aic-mark" aria-hidden="true">{item.name[0]}</span><span
+              class="aic-dot"
+              class:ok={$providerStatus[item.id]?.configured}
+            ></span></button
           >{/each}
       </div>
       <div class="aic-toolbar">
@@ -273,8 +290,7 @@
             {:else}
               <article class="aic-answer">
                 <div class="aic-answer-head">
-                  <span class="aic-avatar">{provider.name[0]}</span>
-                  <strong>{provider.name}</strong>
+                  <span class="aic-avatar logo" title={provider.name}><Brain size={18} /></span>
                   {#if message.meta}<span class="aic-model-tag">{message.meta.model}</span>{/if}
                 </div>
                 {#each segments(message.content) as part, p}
@@ -371,9 +387,9 @@
           {#each $blendSteps as step, index}
             <div class="blend-step" class:active={$blendProgress?.next === index} class:done={($blendProgress?.done.length ?? 0) > index || ($blendResult?.results.length ?? 0) > index}>
               <span class="blend-num">{index + 1}</span>
-              <strong>{ROLE_LABELS[step.role]}</strong>
+              <strong>{stepLabel(step)}</strong>
               <select
-                aria-label={`Provedor do ${ROLE_LABELS[step.role]}`}
+                aria-label={`Provedor do ${stepLabel(step)}`}
                 value={step.provider}
                 disabled={$blendRunning}
                 on:change={(event) => setStepProvider(index, event.currentTarget.value as ProviderId)}
@@ -383,7 +399,7 @@
                     >{item.name}{$providerStatus[item.id]?.configured ? '' : ' (sem chave)'}{isFree(item.id) ? ' · grátis' : ''}</option
                   >{/each}</select
               ><input
-                aria-label={`Modelo do ${ROLE_LABELS[step.role]}`}
+                aria-label={`Modelo do ${stepLabel(step)}`}
                 value={step.model}
                 disabled={$blendRunning}
                 spellcheck="false"
@@ -401,6 +417,8 @@
             ><input type="checkbox" bind:checked={$blendFreeOnly} on:change={() => autoBlend()} />Só gratuito</label
           ><button class="ghost-button" disabled={$blendRunning} on:click={() => autoBlend()}
             ><Icon name="refresh" size={13} />Sugerir automaticamente</button
+          ><button class="ghost-button" disabled={$blendRunning || $squadBusy || !$blendTask.trim()} on:click={() => void previewSquad()}
+            ><Icon name="agents" size={13} />{$squadBusy ? 'Mediador montando...' : 'Pré-visualizar squad'}</button
           ><button
             class="primary-button"
             disabled={$blendRunning || !$blendTask.trim() || !$blendSteps.length}
@@ -409,17 +427,86 @@
           >
         </div>
 
+        {#if $squadPlan}
+          <section class="squad" aria-label="Squad proposto pelo mediador">
+            <h3>Squad proposto</h3>
+            {#if $squadPlan.note}<p class="aic-note">{$squadPlan.note}</p>{/if}
+            <div class="squad-members">
+              {#each $squadPlan.members as member, index}
+                <div class="squad-member">
+                  <strong>{member.title}{member.seniority ? ` · ${member.seniority}` : ''}</strong>
+                  {#if member.role === 'mediator' || member.role === 'git'}
+                    <span class="aic-note">{member.role === 'git' ? 'ação manual após aprovação' : 'monta o squad'}</span>
+                  {:else}
+                    <select
+                      aria-label={`Provedor de ${member.title}`}
+                      value={member.provider ?? ''}
+                      disabled={$blendRunning}
+                      on:change={(event) => setSquadMember(index, { provider: event.currentTarget.value as ProviderId })}
+                      >{#if !member.provider}<option value="" disabled>sem provedor</option>{/if}{#each PROVIDERS.filter((item) => item.supported) as item}<option
+                          value={item.id}
+                          disabled={!$providerStatus[item.id]?.configured || ($squadPlan.freeOnly && !isFree(item.id))}
+                          >{item.name}{isFree(item.id) ? ' · grátis' : ''}</option
+                        >{/each}</select
+                    ><input
+                      aria-label={`Modelo de ${member.title}`}
+                      value={member.model ?? ''}
+                      disabled={$blendRunning || !member.provider}
+                      spellcheck="false"
+                      on:change={(event) => setSquadMember(index, { model: event.currentTarget.value.trim() })}
+                    />
+                  {/if}
+                  {#if member.role !== 'mediator' && member.role !== 'reviewer'}<button
+                      class="ghost-button"
+                      aria-label={`Remover ${member.title}`}
+                      disabled={$blendRunning}
+                      on:click={() => removeSquadMember(index)}>Remover</button
+                    >{/if}
+                </div>
+              {/each}
+            </div>
+            <div class="blend-actions">
+              <select
+                aria-label="Adicionar papel ao squad"
+                value=""
+                on:change={(event) => {
+                  const role = event.currentTarget.value as SquadRole;
+                  if (role) addSquadMember(role);
+                  event.currentTarget.value = '';
+                }}
+                ><option value="">Adicionar papel...</option>{#each addableRoles($squadPlan) as role}<option value={role}
+                    >{SQUAD_TITLES[role]}</option
+                  >{/each}</select
+              ><button class="ghost-button" on:click={() => copy($squadPreview, 'squad-md')}
+                >{copied === 'squad-md' ? 'Copiado' : 'Copiar MD'}</button
+              >
+            </div>
+            <pre class="squad-preview" aria-label="Preview do squad">{$squadPreview}</pre>
+            {#each $squadBlockers as issue}<p class="aic-error" role="alert">{issue}</p>{/each}
+            <div class="blend-actions">
+              <label class="format-toggle"
+                ><input type="checkbox" bind:checked={$squadApproved} disabled={$blendRunning || $squadBlockers.length > 0} />Aprovo este squad</label
+              ><button
+                class="primary-button"
+                disabled={$blendRunning || !$squadApproved || $squadBlockers.length > 0}
+                on:click={() => void runApprovedSquad()}
+                ><Icon name="play" size={13} />Executar squad</button
+              >
+            </div>
+          </section>
+        {/if}
+
         {#if $blendRunning}<div class="aic-thinking">
-            <span class="aic-pulse"></span>Etapa {($blendProgress?.next ?? 0) + 1} de {$blendSteps.length}
-            · {$blendSteps[$blendProgress?.next ?? 0] ? ROLE_LABELS[$blendSteps[$blendProgress?.next ?? 0].role] : ''}
+            <span class="aic-pulse"></span>Etapa {($blendProgress?.next ?? 0) + 1} de {$runSteps.length}
+            · {$runSteps[$blendProgress?.next ?? 0] ? stepLabel($runSteps[$blendProgress?.next ?? 0]) : ''}
             trabalhando
           </div>{/if}
 
         {#each $blendResult?.results ?? $blendProgress?.done ?? [] as item}
           <article class="aic-answer">
             <div class="aic-answer-head">
-              <span class="aic-avatar">{ROLE_LABELS[item.role][0]}</span>
-              <strong>{ROLE_LABELS[item.role]}</strong>
+              <span class="aic-avatar">{stepLabel(item)[0]}</span>
+              <strong>{stepLabel(item)}</strong>
               <span class="aic-model-tag">{getProvider(item.provider).name} · {item.model}</span>
             </div>
             {#each segments(item.text) as part, p}

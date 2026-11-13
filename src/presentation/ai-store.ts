@@ -4,6 +4,17 @@ import { tools } from '../infrastructure/workspace-tools';
 import { PROVIDERS, getProvider } from '../domain/providers';
 import type { ChatMessage, ProviderId } from '../domain/models';
 import type { CatalogModel } from '../domain/workspace-tools';
+import {
+  addMember,
+  mediateSquad,
+  planBlockers,
+  removeMember,
+  renderSquadPlanMarkdown,
+  squadToSteps,
+  updateMember,
+  type SquadPlan,
+  type SquadRole,
+} from '../domain/squad-plan';
 import { isFree, runBlend, suggestBlend, type BlendResult, type BlendStep, type BlendStepResult } from '../domain/agent-blend';
 import {
   estimateCost,
@@ -232,12 +243,51 @@ export function autoBlend() {
   }));
 }
 
-export async function runBlendTask(task: string): Promise<BlendResult> {
-  blendRunning.set(true);
-  blendResult.set(null);
-  blendProgress.set(null);
-  const freeOnly = get(blendFreeOnly);
-  const chat = async (provider: ProviderId, model: string, messages: ChatMessage[]) => {
+/* ---------- Squad: the mediator proposes, the human edits and approves, then it runs ---------- */
+export const squadPlan = writable<SquadPlan | null>(null);
+export const squadApproved = writable(false);
+export const squadBusy = writable(false);
+export const squadPreview = derived(squadPlan, (plan) => (plan ? renderSquadPlanMarkdown(plan) : ''));
+export const squadBlockers = derived(squadPlan, (plan) => (plan ? planBlockers(plan) : []));
+/** Steps of the run in progress (or the last one), so the UI can label squad members. */
+export const runSteps = writable<BlendStep[]>([]);
+
+const readyStatuses = () =>
+  Object.entries(get(providerStatus)).map(([id, v]) => ({ id: id as ProviderId, configured: v.configured }));
+
+/** Asks the mediator model for a squad (falls back to keyword rules) and shows it as a preview. */
+export async function previewSquad() {
+  if (!get(blendTask).trim() || get(squadBusy)) return;
+  squadBusy.set(true);
+  squadApproved.set(false);
+  try {
+    squadPlan.set(await mediateSquad(get(blendTask), readyStatuses(), makeChat(), { freeOnly: get(blendFreeOnly) }));
+  } finally {
+    squadBusy.set(false);
+  }
+}
+
+function editSquad(change: (plan: SquadPlan) => SquadPlan) {
+  squadPlan.update((plan) => (plan ? change(plan) : plan));
+  squadApproved.set(false); // any edit needs a fresh approval
+}
+export const removeSquadMember = (index: number) => editSquad((plan) => removeMember(plan, index));
+export const setSquadMember = (index: number, patch: { provider?: ProviderId; model?: string }) =>
+  editSquad((plan) => updateMember(plan, index, patch));
+export const addSquadMember = (role: SquadRole) => editSquad((plan) => addMember(plan, role, readyStatuses()));
+
+/** Runs the approved squad step by step. Does nothing unless the human approved it. */
+export async function runApprovedSquad(): Promise<BlendResult | null> {
+  const plan = get(squadPlan);
+  if (!plan || !get(squadApproved) || planBlockers(plan).length) return null;
+  const steps = squadToSteps(plan);
+  runSteps.set(steps);
+  return runBlendTask(plan.task, steps);
+}
+
+/** Chat function that enforces key/budget rules and records every call in the monitor. */
+function makeChat() {
+  return async (provider: ProviderId, model: string, messages: ChatMessage[]) => {
     if (!get(providerStatus)[provider]?.configured)
       throw new Error('provedor sem chave configurada');
     if (!isFree(provider) && get(overBudget))
@@ -284,8 +334,16 @@ export async function runBlendTask(task: string): Promise<BlendResult> {
       throw error;
     }
   };
+}
+
+export async function runBlendTask(task: string, steps: BlendStep[] = get(blendSteps)): Promise<BlendResult> {
+  blendRunning.set(true);
+  blendResult.set(null);
+  blendProgress.set(null);
+  runSteps.set(steps);
+  const freeOnly = get(blendFreeOnly);
   try {
-    const result = await runBlend(task, get(blendSteps), chat, {
+    const result = await runBlend(task, steps, makeChat(), {
       freeOnly,
       onProgress: (done, next) => blendProgress.set({ done, next }),
     });

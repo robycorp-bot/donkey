@@ -1,13 +1,18 @@
 import { getProvider } from './providers';
 import type { ChatMessage, ChatReply, ProviderId, ProviderStatus } from './models';
+import type { SquadRole } from './squad-plan';
 
 /** Roles map to personas/: architect plans, backend/frontend writes, reviewer audits. */
 export type BlendRole = 'planner' | 'coder' | 'reviewer';
 
 export interface BlendStep {
-  role: BlendRole;
+  role: BlendRole | SquadRole;
   provider: ProviderId;
   model: string;
+  /** Display name; falls back to ROLE_LABELS. Set by squad steps. */
+  label?: string;
+  /** Replaces the default role prompt. Set by squad steps. */
+  instruction?: string;
 }
 
 export interface BlendStepResult extends BlendStep {
@@ -38,6 +43,10 @@ export const ROLE_LABELS: Record<BlendRole, string> = {
   coder: 'Desenvolvedor',
   reviewer: 'Revisor',
 };
+
+export function stepLabel(step: Pick<BlendStep, 'role' | 'label'>): string {
+  return step.label ?? ROLE_LABELS[step.role as BlendRole] ?? step.role;
+}
 
 /** Free = runs locally or only uses :free models. Everything else may cost money. */
 export function isFree(provider: ProviderId): boolean {
@@ -81,9 +90,14 @@ export function suggestBlend(
   return steps;
 }
 
-function stepPrompt(role: BlendRole, task: string, previous: BlendStepResult[]): string {
-  const context = previous.map((r) => `### Resultado do ${r.role}\n${r.text}`).join('\n\n');
-  return `${ROLE_PROMPTS[role]}\n\n## Tarefa\n${task}${context ? `\n\n${context}` : ''}`;
+const MAX_CONTEXT_PER_STEP = 6000;
+
+function stepPrompt(step: BlendStep, task: string, previous: BlendStepResult[]): string {
+  const context = previous
+    .map((r) => `### Resultado: ${stepLabel(r)}\n${r.text.slice(0, MAX_CONTEXT_PER_STEP)}`)
+    .join('\n\n');
+  const instruction = step.instruction ?? ROLE_PROMPTS[step.role as BlendRole] ?? '';
+  return `${instruction}\n\n## Tarefa\n${task}${context ? `\n\n${context}` : ''}`;
 }
 
 const sum = (items: BlendStepResult[], pick: (r: BlendStepResult) => number) =>
@@ -117,7 +131,7 @@ export async function runBlend(
   for (const [index, step] of steps.entries()) {
     options.onProgress?.([...results], index);
     try {
-      const prompt = stepPrompt(step.role, task.trim(), results);
+      const prompt = stepPrompt(step, task.trim(), results);
       const reply = await chat(step.provider, step.model, [{ role: 'user', content: prompt }]);
       results.push({
         ...step,
@@ -129,7 +143,7 @@ export async function runBlend(
       });
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
-      return fail(results, `Etapa ${step.role} (${step.provider}) falhou: ${reason}`, index);
+      return fail(results, `Etapa ${stepLabel(step)} (${step.provider}) falhou: ${reason}`, index);
     }
   }
   return { ok: true, ...totals(results) };

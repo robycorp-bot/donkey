@@ -1,7 +1,7 @@
 param([string]$Executable)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
-if (-not $Executable) { $Executable = Join-Path $projectRoot 'src-tauri\target\release\coder-mega-brain.exe' }
+if (-not $Executable) { $Executable = Join-Path $projectRoot 'src-tauri\target\release\donkey.exe' }
 $Executable = (Resolve-Path -LiteralPath $Executable).Path
 $testId = [Guid]::NewGuid().ToString('N')
 $fixture = Join-Path $projectRoot "artifacts\smoke-$testId"

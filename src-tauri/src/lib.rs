@@ -27,6 +27,7 @@ pub fn run() {
                 workspace: Arc::new(workspace),
                 assistant: Arc::new(assistant),
                 projects: Arc::new(infrastructure::project::Projects::default()),
+                ptys: Arc::new(infrastructure::pty::Ptys::default()),
             });
             Ok(())
         })
@@ -35,6 +36,7 @@ pub fn run() {
                 use tauri::Manager;
                 let state = window.state::<AppState>();
                 let _ = state.projects.stop();
+                state.ptys.close_all();
             }
         })
         .invoke_handler(tauri::generate_handler![
@@ -56,9 +58,13 @@ pub fn run() {
             commands::open_preview_browser,
             commands::git_diff,
             commands::run_terminal,
+            commands::pty_open,
+            commands::pty_write,
+            commands::pty_resize,
+            commands::pty_close,
             commands::model_catalog,
             commands::live_reload,
         ])
         .run(tauri::generate_context!())
-        .expect("Não foi possível iniciar o Coder mega-brain");
+        .expect("Não foi possível iniciar o Donkey");
 }

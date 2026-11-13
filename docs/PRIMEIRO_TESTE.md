@@ -2,7 +2,7 @@
 
 ## Instalar e abrir
 
-A versão 0.2.0 já foi instalada nesta máquina. Para reinstalar, execute o instalador local `artifacts/Coder-mega-brain-0.2.0-setup.exe`. A instalação é por usuário, sem exigir uma conta no editor. O app aparece no menu Iniciar como **Coder mega-brain**.
+A versão 0.2.0 já foi instalada nesta máquina. Para reinstalar, execute o instalador local `artifacts/Donkey-0.2.0-setup.exe`. A instalação é por usuário, sem exigir uma conta no editor. O app aparece no menu Iniciar como **Donkey**.
 
 Para editar arquivos e usar o servidor HTML, o WebView2 do Windows é suficiente. Para Git, tenha Git instalado. Para executar scripts de projetos JavaScript, tenha Node.js com npm instalado. Reabra o editor depois de instalar ferramentas para atualizar o PATH.
 
@@ -22,7 +22,7 @@ O fluxo roda o build de produção, fecha a cópia aberta, desinstala a versão 
 
 Clique no nome do projeto no topo ou no botão de pasta em **Projetos**. Selecione a pasta raiz. Navegue, abra um arquivo e salve com **Ctrl S**. O editor preserva alterações em abas e detecta conflitos com mudanças feitas por outro editor.
 
-Também é possível iniciar por linha de comando: `coder-mega-brain.exe "C:\caminho\do\projeto"`.
+Também é possível iniciar por linha de comando: `donkey.exe "C:\caminho\do\projeto"`.
 
 ## Fazer commit e enviar
 

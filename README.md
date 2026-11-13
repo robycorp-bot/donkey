@@ -1,4 +1,4 @@
-# Coder mega-brain
+# Donkey
 
 Editor pessoal para uso diário, com visual escuro inspirado no macOS e chats de IA separados por provedor. Painéis suaves, barra de ferramentas compacta e controles de janela próprios substituem a direção retrô inicial, conforme a revisão visual solicitada. A base usa **Tauri 2, Svelte 5, TypeScript, Monaco e Rust**. O contexto original está em [`struct/context-all-md`](struct/context-all-md).
 
@@ -55,7 +55,7 @@ npm run desktop:build
 
 `npm run build` gera a interface web em `dist/`. `npm run desktop:build` compila o executável Windows em `src-tauri/target/release/` e tem empacotamento NSIS habilitado, com ícone próprio. O instalador foi gerado e testado nesta máquina; uma imagem Windows limpa ainda não foi homologada. Os pacotes ficam em `src-tauri/target/release/bundle/`. Consulte a [documentação de distribuição Windows do Tauri](https://v2.tauri.app/distribute/windows-installer/).
 
-O primeiro executável de desenvolvimento pode ser gerado com `npm run tauri -- build --debug --no-bundle` e fica em `src-tauri/target/debug/coder-mega-brain.exe`. Esse artefato valida a compilação nativa e não representa uma versão de produção homologada.
+O primeiro executável de desenvolvimento pode ser gerado com `npm run tauri -- build --debug --no-bundle` e fica em `src-tauri/target/debug/donkey.exe`. Esse artefato valida a compilação nativa e não representa uma versão de produção homologada.
 
 O workflow de CI verifica a interface e o código Rust no Windows. Ele não publica releases nem comprova que uma chave real ou um instalador foi testado.
 

@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Coder mega-brain",
+  "productName": "Donkey",
   "version": "0.2.0",
   "identifier": "dev.robycorp.codermegabrain",
   "build": {
@@ -13,13 +13,13 @@
     "windows": [
       {
         "label": "main",
-        "title": "Coder mega-brain v0.2.0",
+        "title": "Donkey v0.2.0",
         "width": 1440,
         "height": 920,
         "minWidth": 1000,
         "minHeight": 680,
         "decorations": false,
-        "backgroundColor": "#1f2023"
+        "backgroundColor": "#c8ccd4"
       }
     ],
     "security": {
@@ -41,6 +41,7 @@
     ],
     "windows": {
       "nsis": {
+        "installerIcon": "icons/icon.ico",
         "displayLanguageSelector": false,
         "languages": [
           "PortugueseBR"

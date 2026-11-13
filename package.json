@@ -1,5 +1,5 @@
 {
-  "name": "coder-mega-brain",
+  "name": "donkey",
   "private": true,
   "version": "0.2.0",
   "description": "Um editor pessoal, leve e cheio de ideia.",
@@ -22,6 +22,8 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^2.10.1",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
     "monaco-editor": "^0.57.0",
     "prettier": "^3.9.10",
     "prettier-plugin-svelte": "^4.1.1",
