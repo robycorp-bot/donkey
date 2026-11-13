@@ -1,12 +1,5 @@
-# Personas extras deste domínio
+# Personas extras do domínio
 
-O elenco do núcleo já cobre uma fábrica genérica. Só liste aqui papéis **deste
-produto** (ex.: “Atuarial”, “Fiscal”). Cada um precisa de ficha em `personas/`
-seguindo `factory-ia/personas/_MODELO.md`.
+Nenhuma persona de negócio extra além do elenco padrão da fábrica.
 
-**Extras:** nenhuma
-
-<!-- Exemplo:
-- `personas/20-fiscal.md` — interpreta regra tributária; não escreve SQL.
-  Acionado pelo CTO em demandas classe F que toquem obrigação acessória.
--->
+Demandas de **Harness / LGPD / Grau 33** devem acionar **Security** e **Architect** no fluxo normal antes de implementação.

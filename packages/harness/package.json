@@ -1,0 +1,16 @@
+{
+  "name": "@donkey/harness",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Meio de campo: audita e sanitiza conteúdo antes do Grau 33.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5"
+  }
+}

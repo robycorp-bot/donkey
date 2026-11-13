@@ -47,3 +47,11 @@ O produto precisa ser extremamente leve. Um fork do Code - OSS (modelo Cursor) t
 Os recursos do VS Code entram aos poucos nesta base (LSP, paleta de comandos, busca no projeto, diff). A diferença do produto é o motor de agentes: provedores OpenRouter, OpenAI, Anthropic, Google, Grok e Ollama local, com um blend em etapas (planejar, codar, revisar) que prefere local e gratuito e tem modo só gratuito.
 
 **Consequências:** extensões do VS Code não rodam aqui. Qualquer dependência nova deve justificar seu peso. Reavaliar o fork só se a compatibilidade com extensões passar a pesar mais que a leveza.
+
+## ADR-006 — Harness meio de campo
+
+**Estado:** adotada em 2026-11-13.
+
+O núcleo do produto passa a ser **segurança e qualidade da informação** enviada a LLMs externos, não só leveza/custo. Decisão: biblioteca `packages/harness/` como gate (auditoria, redação, resumo local futuro, síntese estrutural) e nomenclatura **Grau 33** para provedores terceiros.
+
+Detalhe: [`adr/0006-harness-meio-de-campo.md`](adr/0006-harness-meio-de-campo.md).

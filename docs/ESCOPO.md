@@ -1,5 +1,7 @@
 # Análise inicial e escopo
 
+**Eixo atual (2026-11):** segurança da informação, qualidade do que replicamos para LLMs externos (**Grau 33**) e uso ético de tokens — para **desenvolvedores**. Visão narrativa: [`VISAO.md`](VISAO.md). Meio de campo: `packages/harness/`.
+
 O arquivo [`struct/context-all-md`](../struct/context-all-md) descreve um editor próprio para uso pessoal: leve, escuro, com identidade retrô, IA acessível e uma organização orientada ao domínio. Ele orienta o produto; não equivale a uma especificação técnica fechada nem a evidência de que as integrações já existem.
 
 A orientação visual posterior do usuário substituiu o retrô por uma aparência enterprise (prata/branco, chrome corporativo, tipografia de sistema). O contexto original permanece preservado.

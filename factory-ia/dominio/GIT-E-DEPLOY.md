@@ -1,19 +1,19 @@
 # Git e deploy deste projeto
 
-> Complementa o núcleo (push/PR/merge/produção só com "sim" do humano).
+Complementa o núcleo (push/PR/merge/produção só com "sim" do humano).
 
-**Branch principal:** [PREENCHER — em geral `main`]
+**Branch principal:** `main`
 
-**Nunca entra no Git:** [PREENCHER — `.env`, `config.local.*`, chaves, dumps…]
+**Nunca entra no Git:** `.env`, `config.local.*`, `*.pem`, `*.key`, chaves de API, dumps com PII, `src-tauri/target/` (artefato de build).
 
-**Convenção de commit:** [PREENCHER — ou “usar o padrão do núcleo”]
+**Convenção de commit:** Imperativo, curto, português (padrão do núcleo).
 
-**Há deploy?** [PREENCHER — sim/não]
+**Há deploy?** Não há servidor de produção; há **distribuição** de executável Windows.
 
-**Ambientes:** [PREENCHER — local / homolog / produção / não se aplica]
+**Ambientes:** Local (dev), build de instalador (release pessoal).
 
-**Roteiro de produção (passos):** [PREENCHER — backup, envio, migrate, healthcheck, ou “não há”]
+**Roteiro de produção (passos):** Backup opcional do instalador anterior → `npm run desktop:build` → testar em máquina limpa → substituir instalação local. Sem auto-update remoto na versão atual.
 
-**Homologação pelo DevOps sem humano extra?** [PREENCHER — sim/não; produção nunca]
+**Homologação pelo DevOps sem humano extra?** Não se aplica.
 
-**Pacote nunca inclui:** [PREENCHER]
+**Pacote nunca inclui:** Credenciais, conversas exportadas com PII, workspace do usuário.

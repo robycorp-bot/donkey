@@ -5,6 +5,7 @@ As fases descrevem ordem de evolução, sem datas prometidas. Recursos futuros d
 | Fase | Entrega | Critério de saída |
 | --- | --- | --- |
 | 0 — Fundação | Stack, DDD, versão, identidade visual e build | Interface executável; regras separadas de infraestrutura; verificações automatizadas |
+| **1b — Harness** | Pacote `packages/harness`, ADR-006, domínio preenchido | Detectores LGPD testados; veredito `safe` / `needs_review` / `blocked`; wire no envio do chat na fase 2 |
 | 1 — Editor e chat inicial | Workspace nativo, Monaco, salvamento com conflito, três APIs, cofre de chaves | Testes das regras; fluxo manual Windows de abrir/editar/salvar; chamada autorizada a cada API; falhas e bloqueios conferidos |
 | 2 — Uso diário | Persistência de preferências e conversas, recuperação, pesquisa, atalhos e acompanhamento de alterações externas | Reinício sem perda prevista de estado; conflitos e desempenho observados em projetos reais |
 | 3 — Ferramentas locais | Git, terminal, Docker e Live Server | Comandos e estado reais; processos encerráveis; acesso limitado ao workspace; erros visíveis |

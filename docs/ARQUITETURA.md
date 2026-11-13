@@ -9,10 +9,11 @@ O produto é um aplicativo local. A interface Svelte usa contratos TypeScript; o
 | Workspace | Pasta selecionada, navegação e referências a arquivos | Caminhos devem permanecer dentro da raiz autorizada; leitura de texto aceita UTF-8 |
 | Editor | Documentos abertos, conteúdo, alteração local e salvamento | Conteúdo alterado permanece sinalizado; conflito externo não é sobrescrito silenciosamente |
 | Assistência de IA | Provedor, configuração e conversa | Chave/modelo de um provedor não liberam outro; envio exige configuração e capacidade implementada |
+| **Harness (meio de campo)** | Auditar, redigir, resumir e sintetizar antes do Grau 33 | Texto sensível não sai sem veredito; fail-closed em dúvida; ver `packages/harness/` |
 | Credenciais | Referência e ciclo de vida de segredos | Segredo persistido no cofre nativo, sem retorno da chave para preencher a interface |
 | Shell | Layout, tema, atalhos e mensagens ao usuário | A interface reflete capacidades reais e identifica o modo de demonstração |
 
-Workspace e Editor colaboram por referências e snapshots de arquivos. Assistência de IA recebe somente o conteúdo definido para a solicitação; abrir uma pasta não concede ao modelo acesso automático a ela. Os adapters não decidem regras de domínio.
+Workspace e Editor colaboram por referências e snapshots de arquivos. Assistência de IA recebe somente o conteúdo definido para a solicitação; abrir uma pasta não concede ao modelo acesso automático a ela. O **Harness** é o gate entre a solicitação do usuário e qualquer provedor externo (Grau 33); Ollama em loopback pode tratar resumo local sem classificação Grau 33. Os adapters não decidem regras de domínio.
 
 ## Camadas
 

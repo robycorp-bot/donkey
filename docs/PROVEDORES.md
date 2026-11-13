@@ -1,5 +1,11 @@
 # Provedores, credenciais e limites
 
+## Prioridade do produto
+
+Integrações tratadas como **foco** na visão atual: **Claude (Anthropic)**, **Grok (xAI)** e modelos disponíveis no **pacote Cursor** (quando o fluxo do app usar essa rota). Demais espaços abaixo permanecem suportados ou reservados conforme implementação.
+
+Toda chamada a API de terceiro é **Grau 33**: o conteúdo enviado deve passar pelo **Harness** (`packages/harness/`) assim que a integração na UI estiver ativa. Até lá, o desenvolvedor ainda é responsável por não colar PII no chat — o cofre protege chaves, não o texto da mensagem.
+
 Cada espaço mantém sua própria configuração e conversa. Sem chave e modelo configurados, o envio permanece bloqueado. A presença de uma chave significa apenas que existe uma credencial cadastrada; a primeira requisição pode falhar por autenticação, modelo indisponível, limite, cobrança ou rede.
 
 | Espaço | Integração da versão 0.1.0 | Credencial | Limite declarado |

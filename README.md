@@ -1,10 +1,8 @@
-# Base da fábrica de software (multiagente)
+# Donkey
 
-Isto **não** é um produto. É a estrutura que você copia para **qualquer** projeto
-novo. O artefato é o sistema operacional da equipe de IA: papéis independentes,
-fluxo, paralelismo, qualidade e um slot de domínio.
+Editor desktop (Tauri + Svelte + Monaco) com chat multi-provedor, pensado para **desenvolvedores**. O núcleo do produto é **segurança da informação** e **qualidade do que vai para LLMs de terceiros** (**Grau 33**), com meio de campo no pacote [`packages/harness/`](packages/harness/). Visão: [`docs/VISAO.md`](docs/VISAO.md).
 
-Código de aplicação é output de um projeto-filho, depois que `factory-ia/dominio/` está preenchido.
+Este repositório também embute a **fábrica multiagente** (`factory-ia/`) usada para governar o próprio desenvolvimento. O domínio do Donkey está em [`factory-ia/dominio/`](factory-ia/dominio/).
 
 ## O que é / o que não é
 

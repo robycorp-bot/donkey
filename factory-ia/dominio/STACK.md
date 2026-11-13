@@ -1,21 +1,30 @@
 # Stack do projeto
 
-> `[PREENCHER]` = domínio vazio. Não copie stack de `exemplos/` sem decisão humana.
+**Tipo:** Aplicativo desktop (editor + chat) com backend local; pacote biblioteca **Harness** no monorepo.
 
-**Tipo:** [PREENCHER — web | api | cli | dados | automação | outro]
+**Linguagens / runtime:** TypeScript (Svelte 5 + Vite), Rust (Tauri 2), Node ≥ 22.12 para toolchain.
 
-**Linguagens / runtime:** [PREENCHER]
+**Onde está o código:**
 
-**Onde está o código:** [PREENCHER — pastas na raiz do repo]
+| Pasta | Conteúdo |
+| --- | --- |
+| `src/` | Domínio, aplicação, infraestrutura e UI do Donkey |
+| `src-tauri/` | Comandos nativos, filesystem, cofre, HTTP aos provedores |
+| `packages/harness/` | Filtro de qualidade e segurança (meio de campo) |
+| `docs/` | Visão, arquitetura, roadmap, ADRs |
+| `factory-ia/dominio/` | Missão, regras e glossário **deste** produto |
 
-**Banco:** [PREENCHER — SGBD + como migrar, ou “não há”]
+**Banco:** Não há SGBD na versão atual; estado de sessão e persistência futura a definir em ADR.
 
-**UI:** [PREENCHER — web/SPA/terminal/nenhuma; CSP sim/não]
+**UI:** Svelte 5, Monaco, tema enterprise; CSP e sem `innerHTML` com dado externo não sanitizado.
 
-**Teste / lint (comando):** [PREENCHER — o QA deve rodar isto]
+**Teste / lint (comando):**
 
-**Host / deploy:** [PREENCHER — uma linha; detalhe em GIT-E-DEPLOY.md]
+- Raiz: `npm run check`, `npm run test`, `npm run test:rust`, `npm run test:all`
+- Harness: `cd packages/harness && npm test`
 
-**Limites:** [PREENCHER — memória, timeout, “sem Docker em produção”, etc.]
+**Host / deploy:** Build Windows via `npm run desktop:build`; distribuição pessoal local (ver `docs/ROADMAP.md` fase 5). Detalhe: `GIT-E-DEPLOY.md`.
 
-**Dependências permitidas:** [PREENCHER — ou “qualquer, justificada na ADR”]
+**Limites:** Arquivos de texto UTF-8 até 2 MiB no fluxo nativo atual; chamadas HTTP com timeout nos adapters Rust.
+
+**Dependências permitidas:** As já no `package.json` / `Cargo.toml`; novas libs no Harness ou app exigem justificativa (peso, rede, licença).
