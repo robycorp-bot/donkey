@@ -1,4 +1,5 @@
 import { GRAU_33_LABEL, runHarness, type SensitiveFinding } from '@donkey/harness';
+import { WorkspaceError, createWorkspace, type Workspace } from './workspace';
 
 /**
  * As ferramentas que o servidor expõe.
@@ -21,6 +22,18 @@ export interface ToolDefinition {
 
 /** Perímetro local: processamento aqui dentro não é Grau 33 (ADR-006). */
 const LOCAL_TARGETS = ['ollama', 'localhost', '127.0.0.1', '::1', '0.0.0.0'];
+
+let workspace: Workspace | null = null;
+
+/** Injeta a raiz nos testes; em produção vem de DONKEY_WORKSPACE ou do cwd do processo. */
+export function setWorkspace(next: Workspace | null): void {
+  workspace = next;
+}
+
+function getWorkspace(): Workspace {
+  if (!workspace) workspace = createWorkspace(process.env.DONKEY_WORKSPACE ?? process.cwd());
+  return workspace;
+}
 
 export const TOOLS: ToolDefinition[] = [
   {
@@ -52,6 +65,44 @@ export const TOOLS: ToolDefinition[] = [
         formato: { type: 'string', enum: ['xml', 'json', 'texto'], description: 'Forma desejada.' },
       },
       required: ['formato'],
+    },
+  },
+  {
+    name: 'listar_arquivos',
+    description:
+      'Lista o conteúdo de uma pasta do projeto. Caminhos são sempre relativos à raiz. ' +
+      'Arquivos de segredo aparecem marcados como bloqueados e nunca têm o conteúdo lido.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        caminho: { type: 'string', description: 'Pasta relativa à raiz. Padrão: a própria raiz.' },
+      },
+    },
+  },
+  {
+    name: 'ler_arquivo',
+    description:
+      'Lê um arquivo de texto do projeto já auditado pelo Harness: trechos sensíveis vêm ' +
+      'substituídos por marcadores. Use isto em vez de ferramentas próprias de leitura de disco — ' +
+      'o conteúdo original não sai desta máquina.',
+    inputSchema: {
+      type: 'object',
+      properties: { caminho: { type: 'string', description: 'Arquivo relativo à raiz.' } },
+      required: ['caminho'],
+    },
+  },
+  {
+    name: 'buscar_no_projeto',
+    description:
+      'Procura um termo nos arquivos de texto do projeto e devolve caminho, linha e o trecho ' +
+      'já auditado. Pula pastas de dependência e de build, e nunca abre arquivo de segredo.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        termo: { type: 'string', description: 'Texto a procurar, sem diferenciar maiúsculas.' },
+        limite: { type: 'number', description: 'Máximo de ocorrências. Padrão 50, teto 200.' },
+      },
+      required: ['termo'],
     },
   },
   {
@@ -146,6 +197,30 @@ export function callTool(name: string, args: Record<string, unknown>): ToolResul
       grau33: local === null ? undefined : !local,
       perimetroLocal: local === null ? undefined : local,
     });
+  }
+
+  if (name === 'listar_arquivos' || name === 'ler_arquivo' || name === 'buscar_no_projeto') {
+    try {
+      const ws = getWorkspace();
+      if (name === 'listar_arquivos')
+        return text(ws.list(typeof args.caminho === 'string' ? args.caminho : '.'));
+      if (name === 'ler_arquivo') {
+        if (typeof args.caminho !== 'string')
+          return failure('O campo "caminho" é obrigatório e deve ser string.');
+        return text(ws.read(args.caminho));
+      }
+      if (typeof args.termo !== 'string')
+        return failure('O campo "termo" é obrigatório e deve ser string.');
+      const limite =
+        typeof args.limite === 'number' && Number.isFinite(args.limite)
+          ? Math.min(Math.max(Math.trunc(args.limite), 1), 200)
+          : 50;
+      return text(ws.search(args.termo, limite));
+    } catch (error) {
+      // Mensagem do WorkspaceError é pública por construção; qualquer outra falha vira recusa genérica.
+      if (error instanceof WorkspaceError) return failure(error.message);
+      return failure('Não foi possível atender a esse acesso ao projeto.');
+    }
   }
 
   return failure(`Ferramenta desconhecida: ${name}`);

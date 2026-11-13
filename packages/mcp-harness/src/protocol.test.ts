@@ -35,10 +35,17 @@ describe('protocolo MCP', () => {
     expect(handleMessage({ jsonrpc: '2.0', method: 'notifications/initialized' })).toBeNull();
   });
 
-  it('lista as três ferramentas com esquema de entrada', () => {
+  it('lista as seis ferramentas com esquema de entrada', () => {
     const response = handleMessage({ jsonrpc: '2.0', id: 2, method: 'tools/list' });
     const { tools } = response?.result as { tools: typeof TOOLS };
-    expect(tools.map((t) => t.name)).toEqual(['auditar_texto', 'sintetizar_dados', 'status_grau33']);
+    expect(tools.map((t) => t.name)).toEqual([
+      'auditar_texto',
+      'sintetizar_dados',
+      'listar_arquivos',
+      'ler_arquivo',
+      'buscar_no_projeto',
+      'status_grau33',
+    ]);
     for (const tool of tools) expect(tool.inputSchema.type).toBe('object');
   });
 

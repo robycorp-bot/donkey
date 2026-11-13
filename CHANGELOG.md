@@ -4,6 +4,7 @@ O projeto usa versões `MAJOR.MINOR.PATCH`. Durante `0.x`, os contratos e format
 
 ## Não lançado
 
+- Acesso mediado ao projeto pelo MCP: `listar_arquivos`, `ler_arquivo` e `buscar_no_projeto` devolvem conteúdo já auditado pelo Harness, com o caminho preso à raiz (sem `..`, sem link para fora), recusa de arquivo de segredo antes da leitura, recusa de binário e teto de 2 MiB. É a porta para o CLI delegado trabalhar com as ferramentas nativas de disco desligadas (ADR-007).
 - Decisão: o Donkey não reusa credencial de outro aplicativo nem trata o login do Google como credencial de provedor; a execução passa a ser delegada ao CLI já autenticado na máquina (ADR-007, proposta — parte 2 espera o "sim" do humano).
 - Servidor MCP `donkey-harness` (`packages/mcp-harness`): expõe `auditar_texto`, `sintetizar_dados` e `status_grau33` a qualquer CLI de IA, por JSON-RPC sobre stdio e sem dependência externa. `.mcp.json` na raiz configura o Claude Code. A resposta nunca devolve o trecho sensível original, só tipo, severidade, posição e o texto redigido.
 - Harness ligado ao chat (ADR-006): toda mensagem para um provedor Grau 33 passa pela auditoria antes do HTTP. Veredito diferente de `safe` abre "auditar solicitação" com os achados, o trecho redigido e as opções cancelar ou enviar a versão redigida — o original nunca é oferecido para envio. Ollama local segue fora da auditoria por ser perímetro local; no Blend e no Squad, achado interrompe a etapa (fail-closed).
