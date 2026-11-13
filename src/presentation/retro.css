@@ -1,0 +1,707 @@
+/* Donkey · casca retrô (Windows 95/98). Visual antigo por fora; o motor é o mesmo por dentro.
+   Carregado depois de styles.css: só sobrescreve aparência, nunca comportamento. */
+
+/* ---------- Paleta: "Clássico" (claro) e "Escuro" (alto contraste suave) ---------- */
+:root,
+:root[data-theme='light'],
+.app-shell[data-theme='light'] {
+  color-scheme: light;
+  /* Cinzas levemente azulados: nada de preto puro, tudo na mesma família do azul-marinho. */
+  --face: #c8ccd4;
+  --hi: #ffffff;
+  --light: #e4e7ed;
+  --lo: #8b92a1;
+  --dk: #4b5263;
+  --win: #fcfcfe;
+  --win-text: #1d2333;
+  --sel: #0a246a;
+  --sel-text: #ffffff;
+  --title-a: #0a246a;
+  --title-b: #3d6fb8;
+  --tip: #fff8dc;
+  --note: #fff4c2;
+  --ink: #1d2333;
+  --folder: #f2cf66;
+  --term-bg: #1c2438;
+  --term-fg: #d3daea;
+  --edge: #1d233355;
+  --disabled: #6b7284;
+
+  --bg: var(--face);
+  --surface: var(--face);
+  --surface-2: var(--light);
+  --surface-3: #aeb4c0;
+  --line: var(--lo);
+  --text: #1d2333;
+  --muted: #454c5e;
+  --primary: #0a246a;
+  --primary-ink: #ffffff;
+  --primary-soft: #0a246a1f;
+  --danger: #9b1c1c;
+  --ok: #16602a;
+  --warn: #6a4d00;
+  --shadow: 2px 2px 0 var(--edge);
+}
+:root[data-theme='dark'],
+.app-shell[data-theme='dark'] {
+  color-scheme: dark;
+  --face: #2d323e;
+  --hi: #59617a;
+  --light: #3c4356;
+  --lo: #181b24;
+  --dk: #10131a;
+  --win: #1d2230;
+  --win-text: #dde3f0;
+  --sel: #3a63c0;
+  --sel-text: #ffffff;
+  --title-a: #16234f;
+  --title-b: #3a64b0;
+  --tip: #3a3822;
+  --note: #34331f;
+  --ink: #dde3f0;
+  --folder: #e0bf5c;
+  --term-bg: #131827;
+  --term-fg: #d0d8ea;
+  --edge: #0b0d1299;
+  --disabled: #7d869c;
+
+  --bg: var(--face);
+  --surface: var(--face);
+  --surface-2: #3a4152;
+  --surface-3: #4a5266;
+  --line: #10131a;
+  --text: #e6eaf3;
+  --muted: #aab2c6;
+  --primary: #9dbcff;
+  --primary-ink: #10131a;
+  --primary-soft: #9dbcff22;
+  --danger: #ff8a8a;
+  --ok: #86dc8a;
+  --warn: #f0d266;
+  --shadow: 2px 2px 0 var(--edge);
+}
+:root {
+  --bevel-out: inset -1px -1px var(--dk), inset 1px 1px var(--hi), inset -2px -2px var(--lo), inset 2px 2px var(--light);
+  --bevel-in: inset -1px -1px var(--hi), inset 1px 1px var(--lo), inset -2px -2px var(--light), inset 2px 2px var(--dk);
+  --bevel-field: inset -1px -1px var(--hi), inset 1px 1px var(--lo), inset -2px -2px var(--light), inset 2px 2px var(--dk);
+  --bevel-thin-out: inset -1px -1px var(--dk), inset 1px 1px var(--hi);
+  --bevel-thin-in: inset -1px -1px var(--hi), inset 1px 1px var(--lo);
+  --sans: Tahoma, 'MS Sans Serif', 'Segoe UI', Arial, sans-serif;
+  --mono: 'Lucida Console', 'Courier New', Consolas, monospace;
+  --radius: 0;
+  font-size: 12px;
+}
+
+/* Tudo quadrado, sem sombras suaves nem animações de interface moderna. */
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+  scroll-behavior: auto !important;
+}
+strong,
+.panel-heading h2 {
+  font-weight: 700;
+}
+body {
+  background: var(--face);
+}
+svg {
+  shape-rendering: crispEdges;
+}
+.icon path {
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+/* ---------- Botões em relevo ---------- */
+.primary-button,
+.secondary-button,
+.danger-button,
+.ghost-button,
+.text-button,
+.run-button,
+.project-chip,
+.search-box,
+.icon-button,
+.aic-chip,
+.aic-send,
+.aic-quick button,
+.aic-modes button,
+.aic-providers button,
+.terminal-quick button:not(.icon-button),
+.rail button,
+.status-item,
+.aic-link,
+.scm-link,
+.tab-close {
+  background: var(--face);
+  color: var(--text);
+  border: 0;
+  box-shadow: var(--bevel-out);
+  text-shadow: none;
+}
+.primary-button {
+  font-weight: 700;
+  outline: 1px solid var(--dk);
+  outline-offset: -1px;
+  box-shadow: var(--bevel-out);
+}
+.danger-button {
+  color: var(--danger);
+}
+.primary-button:hover:not(:disabled),
+.secondary-button:hover:not(:disabled),
+.ghost-button:hover:not(:disabled),
+.run-button:hover:not(:disabled),
+.project-chip:hover,
+.search-box:hover,
+.icon-button:hover:not(:disabled),
+.aic-quick button:hover:not(:disabled),
+.rail button:hover,
+.status-item:hover {
+  background: var(--face);
+  color: var(--text);
+}
+button:active:not(:disabled),
+.aic-modes button.on,
+.aic-providers button.on,
+.rail button.on,
+.status-item.active,
+.format-toggle input:checked {
+  box-shadow: var(--bevel-in);
+}
+.aic-modes button.on,
+.aic-providers button.on,
+.rail button.on {
+  background: repeating-conic-gradient(var(--face) 0 25%, var(--hi) 0 50%) 0 0 / 2px 2px;
+  color: var(--text);
+  font-weight: 700;
+}
+button:disabled {
+  opacity: 1;
+  color: var(--disabled);
+  text-shadow: 1px 1px 0 var(--hi);
+}
+:root[data-theme='dark'] button:disabled,
+.app-shell[data-theme='dark'] button:disabled {
+  text-shadow: none;
+}
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 1px dotted var(--text);
+  outline-offset: -4px;
+}
+.icon-button {
+  width: 26px;
+  height: 26px;
+  color: var(--text);
+}
+.run-button {
+  font-weight: 700;
+  color: var(--ok);
+}
+.aic-send {
+  min-width: 32px;
+}
+
+/* ---------- Campos afundados ---------- */
+.text-field,
+input:not([type='checkbox']):not([type='radio']),
+textarea,
+select {
+  background: var(--win);
+  color: var(--win-text);
+  border: 0;
+  box-shadow: var(--bevel-field);
+  padding: 3px 5px;
+}
+.aic-box {
+  background: var(--win);
+  border: 0;
+  box-shadow: var(--bevel-field);
+}
+.aic-box textarea,
+.aic-box input {
+  box-shadow: none;
+}
+.search-box {
+  color: var(--text);
+  box-shadow: var(--bevel-field);
+  background: var(--win);
+  color: var(--win-text);
+}
+select {
+  padding-right: 2px;
+}
+
+/* ---------- Barra de título (azul-marinho) + barra de ferramentas ---------- */
+.topbar {
+  height: auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
+  grid-template-rows: auto auto;
+  gap: 4px 4px;
+  padding: 0 0 4px;
+  background: var(--face);
+  border-bottom: 1px solid var(--lo);
+  box-shadow: 0 1px 0 var(--hi);
+}
+.topbar-actions {
+  display: contents;
+}
+.brand {
+  grid-row: 1;
+  grid-column: 1 / span 5;
+  min-width: 0;
+  height: 22px;
+  padding: 0 4px;
+  gap: 6px;
+  background: linear-gradient(90deg, var(--title-a), var(--title-b));
+  color: #fff;
+  font-size: 12px;
+}
+.brand strong {
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.brand svg {
+  width: 16px;
+  height: 16px;
+}
+.window-controls {
+  grid-row: 1;
+  grid-column: 6;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 0 3px;
+  background: var(--title-b);
+}
+.window-controls .icon-button {
+  width: 18px;
+  height: 16px;
+  color: var(--text);
+  background: var(--face);
+  box-shadow: var(--bevel-out);
+}
+.window-controls .icon-button svg {
+  width: 9px;
+  height: 9px;
+  stroke-width: 2.4;
+}
+.window-controls .icon-button:active:not(:disabled) {
+  box-shadow: var(--bevel-in);
+}
+.window-controls .icon-button.close:hover:not(:disabled) {
+  background: var(--face);
+  color: var(--text);
+}
+.project-chip {
+  grid-row: 2;
+  grid-column: 1;
+  height: 26px;
+  margin-left: 4px;
+  max-width: 240px;
+}
+.search-box {
+  grid-row: 2;
+  grid-column: 2;
+  height: 26px;
+  max-width: none;
+  margin: 0;
+  width: 100%;
+  justify-self: stretch;
+}
+.run-button {
+  grid-row: 2;
+  grid-column: 3;
+  height: 26px;
+  padding: 0 10px;
+}
+.topbar-actions > .icon-button:nth-of-type(1) {
+  grid-row: 2;
+  grid-column: 4;
+}
+.topbar-actions > .icon-button:nth-of-type(2) {
+  grid-row: 2;
+  grid-column: 5;
+  margin-right: 4px;
+}
+
+/* ---------- Painéis ---------- */
+.rail {
+  width: 66px;
+  background: var(--face);
+  border-right: 0;
+  box-shadow: inset -1px 0 var(--lo), inset -2px 0 var(--hi);
+  padding: 6px 0;
+}
+.rail button {
+  width: 56px;
+  padding: 6px 0 4px;
+}
+.rail-badge {
+  background: var(--sel);
+  color: var(--sel-text);
+}
+.explorer,
+.main-area,
+.aic,
+.aim,
+.scm {
+  background: var(--face);
+}
+.panel-heading {
+  padding: 4px 6px;
+  margin: 4px;
+  background: linear-gradient(90deg, var(--title-a), var(--title-b));
+  color: #fff;
+}
+.panel-heading h2,
+.panel-heading h2 span {
+  color: #fff;
+  font-size: 12px;
+}
+.panel-heading .icon-button {
+  width: 18px;
+  height: 16px;
+}
+.file-tree,
+.file-search,
+.editor-mount,
+.aic-scroll,
+.aim-scroll {
+  background: var(--win);
+  color: var(--win-text);
+}
+.file-tree {
+  margin: 0 4px 4px;
+  box-shadow: var(--bevel-field);
+  padding: 2px;
+}
+.tree-entry {
+  height: 20px;
+  color: var(--win-text);
+}
+.tree-entry:hover {
+  background: transparent;
+}
+.tree-entry.selected,
+.tree-entry:focus-visible {
+  background: var(--sel);
+  color: var(--sel-text);
+  outline: 1px dotted var(--sel-text);
+  outline-offset: -2px;
+}
+.resizer,
+.resizer-row {
+  background: var(--face);
+}
+.resizer:hover,
+.resizer-row:hover {
+  background: var(--lo);
+}
+
+/* ---------- Abas ---------- */
+.tab-bar {
+  height: 28px;
+  background: var(--face);
+  border-bottom: 0;
+  padding-left: 4px;
+}
+.editor-tab {
+  height: 24px;
+  color: var(--text);
+}
+.tab-wrapper {
+  margin-top: 2px;
+  background: var(--face);
+  box-shadow: var(--bevel-thin-out);
+}
+.tab-wrapper.chosen,
+.editor-tab.chosen {
+  background: var(--face);
+  color: var(--text);
+  font-weight: 700;
+  box-shadow: var(--bevel-thin-out);
+  margin-top: 0;
+}
+.editor-tab:hover {
+  background: transparent;
+}
+.breadcrumb {
+  background: var(--face);
+  border-bottom: 1px solid var(--lo);
+}
+.editor-surface {
+  margin: 0 4px;
+  box-shadow: var(--bevel-field);
+  background: var(--win);
+}
+
+/* ---------- Conversa e blend ---------- */
+.aic-head {
+  background: var(--face);
+  border-bottom: 1px solid var(--lo);
+}
+.aic-modes {
+  background: transparent;
+  padding: 0;
+  gap: 2px;
+}
+.aic-modes button,
+.aic-providers button {
+  height: 24px;
+  color: var(--text);
+}
+.aic-mark {
+  background: var(--face);
+  box-shadow: var(--bevel-thin-out);
+  color: var(--text);
+}
+.aic-providers button.on .aic-mark {
+  background: var(--sel);
+  color: var(--sel-text);
+}
+.aic-user {
+  background: var(--note);
+  color: var(--win-text);
+  border: 1px solid var(--dk);
+  box-shadow: 2px 2px 0 var(--lo);
+}
+.aic-answer,
+.aic-code,
+.blend-step,
+.squad,
+.squad-preview,
+.aim-card,
+.aim-now,
+.info-box {
+  background: var(--win);
+  color: var(--win-text);
+  border: 0;
+  box-shadow: var(--bevel-field);
+}
+.aic-code-head {
+  background: var(--face);
+  color: var(--text);
+}
+.aic-avatar.logo {
+  background: transparent;
+}
+.aic-avatar {
+  background: var(--sel);
+  color: var(--sel-text);
+}
+.aic-orb {
+  background: transparent;
+  box-shadow: none;
+}
+.aic-model-tag,
+.aic-price,
+.aic-hint,
+.aic-note,
+.aic-meta {
+  color: var(--muted);
+}
+.aic-error,
+.tool-error {
+  color: var(--danger);
+  font-weight: 700;
+}
+.squad-preview {
+  font: 12px/1.4 var(--mono);
+}
+
+/* ---------- Terminal estilo DOS ---------- */
+.terminal-wrap {
+  background: var(--face);
+  padding: 4px;
+}
+.terminal,
+.pty {
+  background: var(--face);
+  font-family: var(--mono);
+}
+.terminal-head {
+  background: linear-gradient(90deg, var(--title-a), var(--title-b));
+  color: #fff;
+  padding: 2px 4px;
+}
+.terminal-head small {
+  color: #dfe8ff;
+}
+.terminal-quick select {
+  height: 20px;
+}
+.terminal-quick .icon-button {
+  width: 18px;
+  height: 16px;
+}
+.terminal-body,
+.pty-host {
+  background: var(--term-bg);
+  color: var(--term-fg);
+  box-shadow: var(--bevel-field);
+}
+.terminal-out,
+.terminal-cmd,
+.terminal-input,
+.terminal-input input {
+  color: var(--term-fg);
+  background: var(--term-bg);
+  box-shadow: none;
+}
+
+/* ---------- Barra de status (células afundadas) ---------- */
+.statusbar {
+  height: 24px;
+  background: var(--face);
+  border-top: 1px solid var(--hi);
+  color: var(--text);
+  padding: 1px 3px;
+  gap: 3px;
+}
+.status-item {
+  height: 20px;
+  box-shadow: var(--bevel-thin-in);
+  background: var(--face);
+}
+.status-item b {
+  background: var(--sel);
+  color: var(--sel-text);
+}
+.live-dot,
+.live-led,
+.status-dot {
+  border-radius: 0 !important;
+}
+
+/* ---------- Janelas de diálogo ---------- */
+.modal-backdrop {
+  background: repeating-conic-gradient(#0000 0 25%, var(--edge) 0 50%) 0 0 / 2px 2px;
+}
+.modal {
+  padding: 0 0 8px;
+  border: 0;
+  background: var(--face);
+  box-shadow: var(--bevel-out), 4px 4px 0 var(--edge);
+}
+.modal > * {
+  margin-left: 8px;
+  margin-right: 8px;
+}
+.modal-heading {
+  margin: 3px 3px 8px;
+  padding: 3px 6px;
+  background: linear-gradient(90deg, var(--title-a), var(--title-b));
+  color: #fff;
+}
+.modal-heading h2,
+.modal-heading h3 {
+  color: #fff;
+  font-size: 12px;
+}
+.command-list button.on,
+.command-list button:hover {
+  background: var(--sel);
+  color: var(--sel-text);
+}
+.toast {
+  background: var(--tip);
+  color: var(--text);
+  border: 1px solid var(--dk);
+  box-shadow: 2px 2px 0 var(--edge);
+}
+kbd {
+  background: var(--face);
+  color: var(--text);
+  border: 0;
+  box-shadow: var(--bevel-thin-out);
+}
+
+/* ---------- Barras de rolagem clássicas ---------- */
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+::-webkit-scrollbar-track {
+  background: repeating-conic-gradient(var(--face) 0 25%, var(--hi) 0 50%) 0 0 / 2px 2px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--face);
+  border: 0;
+  box-shadow: var(--bevel-out);
+}
+::-webkit-scrollbar-button:single-button {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--face);
+  box-shadow: var(--bevel-out);
+}
+::-webkit-scrollbar-corner {
+  background: var(--face);
+}
+
+/* ---------- Ícones coloridos estilo Windows antigo ---------- */
+.icon-folder path {
+  fill: var(--folder);
+  stroke: var(--ink);
+  stroke-width: 1.4;
+}
+.icon-file path {
+  fill: var(--win);
+  stroke: var(--ink);
+  stroke-width: 1.4;
+}
+.icon-save path {
+  fill: #6f8fc9;
+  stroke: var(--ink);
+  stroke-width: 1.4;
+}
+.icon-terminal path {
+  stroke-width: 2.2;
+}
+.icon-key path,
+.icon-lock path {
+  fill: var(--folder);
+  stroke: var(--ink);
+  stroke-width: 1.4;
+}
+.icon-monitor path,
+.icon-chat path,
+.icon-book path,
+.icon-box path,
+.icon-wallet path {
+  fill: var(--win);
+  stroke: var(--ink);
+  stroke-width: 1.4;
+}
+.icon-play path {
+  fill: var(--ok);
+  stroke: var(--ok);
+}
+.icon-spark path {
+  fill: var(--folder);
+  stroke: var(--ink);
+}
+.rail button .icon,
+.rail button svg {
+  width: 24px;
+  height: 24px;
+}
+.explorer .icon-folder path,
+.tree-entry.selected .icon path {
+  stroke: var(--ink);
+}
+
+.terminal-hint { color: var(--term-fg); }
+.terminal-code { color: var(--danger); }
+
+.modal-heading *:not(button):not(svg):not(path) { color: #fff; }

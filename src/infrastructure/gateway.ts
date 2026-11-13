@@ -49,18 +49,18 @@ export function createNativeGateway(): AppGateway {
   };
 }
 
-const PREVIEW_ROOT = '/preview/coder-mega-brain';
+const PREVIEW_ROOT = '/preview/donkey';
 
 /** A session-only sandbox: no filesystem, network, persistent storage, or credentials. */
 export function createPreviewGateway(): AppGateway {
   const files = new Map<string, string>([
     [
       `${PREVIEW_ROOT}/README.md`,
-      '# Coder mega-brain\n\nUm editor de outro tempo. Um motor de agora.\n\nEsta é uma prévia interativa no navegador. Abra um arquivo, edite e salve à vontade. As alterações duram somente nesta sessão.\n\nNo aplicativo desktop, abra uma pasta real e configure uma chave de API para conversar com seus modelos.\n',
+      '# Donkey\n\nUm editor de outro tempo. Um motor de agora.\n\nEsta é uma prévia interativa no navegador. Abra um arquivo, edite e salve à vontade. As alterações duram somente nesta sessão.\n\nNo aplicativo desktop, abra uma pasta real e configure uma chave de API para conversar com seus modelos.\n',
     ],
     [
       `${PREVIEW_ROOT}/src/main.ts`,
-      `// Coder mega-brain · um editor com personalidade\n\ninterface Companheiro {\n  nome: string;\n  pronto: boolean;\n}\n\nconst boteco: Companheiro = {\n  nome: 'Boteco de IA',\n  pronto: false, // Configure sua chave no aplicativo desktop.\n};\n\nfunction abrirProsa(companheiro: Companheiro): string {\n  if (!companheiro.pronto) {\n    return 'Oxente, configure a chave primeiro!';\n  }\n\n  return 'Puxe uma cadeira. Bora construir coisa boa.';\n}\n\nconsole.log(abrirProsa(boteco));\n`,
+      `// Donkey · um editor com personalidade\n\ninterface Companheiro {\n  nome: string;\n  pronto: boolean;\n}\n\nconst boteco: Companheiro = {\n  nome: 'Boteco de IA',\n  pronto: false, // Configure sua chave no aplicativo desktop.\n};\n\nfunction abrirProsa(companheiro: Companheiro): string {\n  if (!companheiro.pronto) {\n    return 'Oxente, configure a chave primeiro!';\n  }\n\n  return 'Puxe uma cadeira. Bora construir coisa boa.';\n}\n\nconsole.log(abrirProsa(boteco));\n`,
     ],
     [
       `${PREVIEW_ROOT}/src/styles.css`,
@@ -68,7 +68,7 @@ export function createPreviewGateway(): AppGateway {
     ],
     [
       `${PREVIEW_ROOT}/package.json`,
-      '{\n  "name": "coder-mega-brain",\n  "private": true,\n  "description": "Prévia de um editor com alma retrô"\n}\n',
+      '{\n  "name": "donkey",\n  "private": true,\n  "description": "Prévia de um editor com alma retrô"\n}\n',
     ],
   ]);
   const directories = new Set([PREVIEW_ROOT, `${PREVIEW_ROOT}/src`]);
@@ -98,7 +98,7 @@ export function createPreviewGateway(): AppGateway {
   return {
     isPreview: true,
     async openWorkspace() {
-      return { name: 'coder-mega-brain', path: PREVIEW_ROOT, entries: list(PREVIEW_ROOT) };
+      return { name: 'donkey', path: PREVIEW_ROOT, entries: list(PREVIEW_ROOT) };
     },
     async listDirectory(path) {
       return list(path);

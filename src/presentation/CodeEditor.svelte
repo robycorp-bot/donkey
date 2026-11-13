@@ -34,7 +34,7 @@
     const model = instance?.getModel();
     const selection = instance?.getSelection();
     if (!instance || !model || !selection || readOnly) return false;
-    instance.executeEdits('coder-mega-brain-ia', [{ range: selection, text, forceMoveMarkers: true }]);
+    instance.executeEdits('donkey-ia', [{ range: selection, text, forceMoveMarkers: true }]);
     instance.pushUndoStop();
     instance.focus();
     return true;
@@ -172,36 +172,36 @@
           { token: 'type', foreground: '8AB4F8' },
         ],
         colors: {
-          'editor.background': '#1f2023',
-          'editor.foreground': '#e8eaed',
-          'editorLineNumber.foreground': '#5f6368',
-          'editorLineNumber.activeForeground': '#8ab4f8',
-          'editor.lineHighlightBackground': '#292a2e',
-          'editor.selectionBackground': '#3c4a63',
-          'editorCursor.foreground': '#8ab4f8',
+          'editor.background': '#1d2230',
+          'editor.foreground': '#dde3f0',
+          'editorLineNumber.foreground': '#6b7490',
+          'editorLineNumber.activeForeground': '#9dbcff',
+          'editor.lineHighlightBackground': '#262c3d',
+          'editor.selectionBackground': '#3a63c066',
+          'editorCursor.foreground': '#9dbcff',
           'editorIndentGuide.background1': '#33353a',
-          'editorWidget.background': '#292a2e',
-          'editorWidget.border': '#3c4043',
+          'editorWidget.background': '#2d323e',
+          'editorWidget.border': '#10131a',
         },
       });
       api.editor.defineTheme('mega-light', {
         base: 'vs',
         inherit: true,
         rules: [
-          { token: 'comment', foreground: '188038', fontStyle: 'italic' },
-          { token: 'keyword', foreground: '8430CE' },
-          { token: 'string', foreground: 'C5221F' },
-          { token: 'number', foreground: 'B06000' },
-          { token: 'type', foreground: '1A73E8' },
+          { token: 'comment', foreground: '3f7d4a', fontStyle: 'italic' },
+          { token: 'keyword', foreground: '0a246a', fontStyle: 'bold' },
+          { token: 'string', foreground: '8a2f2f' },
+          { token: 'number', foreground: '6b3a8f' },
+          { token: 'type', foreground: '1f6f78' },
         ],
         colors: {
-          'editor.background': '#ffffff',
-          'editor.foreground': '#202124',
-          'editorLineNumber.foreground': '#9aa0a6',
-          'editorLineNumber.activeForeground': '#1a73e8',
-          'editor.lineHighlightBackground': '#f1f3f4',
-          'editor.selectionBackground': '#d2e3fc',
-          'editorCursor.foreground': '#1a73e8',
+          'editor.background': '#fcfcfe',
+          'editor.foreground': '#1d2333',
+          'editorLineNumber.foreground': '#8b92a1',
+          'editorLineNumber.activeForeground': '#1d2333',
+          'editor.lineHighlightBackground': '#fff8dc',
+          'editor.selectionBackground': '#0a246a55',
+          'editorCursor.foreground': '#1d2333',
         },
       });
       const codeEditor = api.editor.create(container, {
@@ -209,15 +209,15 @@
         theme: theme === 'light' ? 'mega-light' : 'mega-brain',
         automaticLayout: true,
         minimap: { enabled: false },
-        fontFamily: '"Cascadia Code", "JetBrains Mono", "Consolas", monospace',
+        fontFamily: '"Lucida Console", "Courier New", Consolas, monospace',
         fontSize: 13,
-        lineHeight: 23,
-        padding: { top: 22, bottom: 22 },
+        lineHeight: 20,
+        padding: { top: 8, bottom: 8 },
         scrollBeyondLastLine: false,
         renderLineHighlight: 'all',
         tabSize: 2,
         wordWrap: 'on',
-        smoothScrolling: true,
+        smoothScrolling: false,
         overviewRulerLanes: 0,
         hideCursorInOverviewRuler: true,
         scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },

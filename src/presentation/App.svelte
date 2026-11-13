@@ -15,6 +15,7 @@
   import CodeEditor from './CodeEditor.svelte';
   import SourceControl from './SourceControl.svelte';
   import TerminalPanel from './TerminalPanel.svelte';
+  import PtyTerminal from './PtyTerminal.svelte';
   import { gitAct, gitBusy, gitHooks, gitMessage, gitState, refreshGit } from './git-store';
   import { canFormat, formatCode } from '../application/formatter';
   import AiCenter from './AiCenter.svelte';
@@ -77,7 +78,7 @@
   let terminalHeight = stored('terminal', 220);
   let sidebarView: 'files' | 'git' = 'files';
   let showTerminal = false;
-  let terminal: TerminalPanel;
+  let terminal: TerminalPanel | PtyTerminal;
   let formatOnSave = (() => {
     try {
       return localStorage.getItem('cmb.formatOnSave') !== 'false';
@@ -91,9 +92,9 @@
   let liveBusy = false;
   let theme: 'dark' | 'light' = (() => {
     try {
-      return localStorage.getItem('cmb.theme') === 'light' ? 'light' : 'dark';
+      return localStorage.getItem('cmb.theme') === 'dark' ? 'dark' : 'light';
     } catch {
-      return 'dark';
+      return 'light';
     }
   })();
   function toggleTheme() {
@@ -675,7 +676,7 @@
 <div class="app-shell" data-theme={theme} class:native={!gateway.isPreview}>
   <header class="topbar" data-tauri-drag-region>
     <div class="brand" data-tauri-drag-region>
-      <Brain size={22} /><strong>Coder mega-brain</strong>
+      <Brain size={22} /><strong>Donkey</strong>
     </div>
     <button class="project-chip" on:click={openWorkspace} disabled={working} title="Abrir pasta · Ctrl O"
       ><Icon name="folder" size={15} /><span>{workspace?.name ?? 'Abrir pasta'}</span><Icon
@@ -1028,13 +1029,22 @@
           on:pointerdown={(e) => startResize(e, 'terminal')}
         ></div>
         <div class="terminal-wrap" style:height={`${terminalHeight}px`}>
-          <TerminalPanel
-            bind:this={terminal}
-            isPreview={gateway.isPreview}
-            cwd={workspace?.name ?? ''}
-            onClose={() => (showTerminal = false)}
-            onFilesChanged={reloadTree}
-          />
+          {#if gateway.isPreview}
+            <TerminalPanel
+              bind:this={terminal}
+              isPreview={true}
+              cwd={workspace?.name ?? ''}
+              onClose={() => (showTerminal = false)}
+              onFilesChanged={reloadTree}
+            />
+          {:else}
+            <PtyTerminal
+              bind:this={terminal}
+              cwd={workspace?.name ?? ''}
+              onClose={() => (showTerminal = false)}
+              onFilesChanged={reloadTree}
+            />
+          {/if}
         </div>
       {/if}
     </main>
@@ -1314,7 +1324,7 @@
           <span class="roadmap-number">03</span>
           <div>
             <strong>Próximas ferramentas</strong>
-            <p>Docker, terminal interativo, Copilot SDK e agentes com ações revisáveis.</p>
+            <p>Docker, banco de dados local, Copilot SDK e agentes com ações revisáveis.</p>
           </div>
           <span class="roadmap-badge">DISPONÍVEL</span>
         </div>

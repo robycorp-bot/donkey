@@ -12,6 +12,7 @@ pub struct AppState {
     pub workspace: Arc<WorkspaceService>,
     pub assistant: Arc<AssistantService>,
     pub projects: Arc<crate::infrastructure::project::Projects>,
+    pub ptys: Arc<crate::infrastructure::pty::Ptys>,
 }
 #[tauri::command]
 pub async fn get_workspace(state: State<'_, AppState>) -> AppResult<Option<Workspace>> {
@@ -227,6 +228,39 @@ pub async fn run_terminal(
     })
     .await
     .map_err(|_| "O comando foi interrompido.")?
+}
+
+/// Opens an interactive shell in the project root. Output arrives as `pty-output` events.
+#[tauri::command]
+pub async fn pty_open(
+    app: AppHandle,
+    shell: String,
+    cols: u16,
+    rows: u16,
+    state: State<'_, AppState>,
+) -> AppResult<u32> {
+    let workspace = state.workspace.clone();
+    let ptys = state.ptys.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let root = workspace.with_root(|root| {
+            crate::infrastructure::filesystem::WorkspaceRoot::select(root.path())
+        })?;
+        ptys.open(app, &root, &shell, cols, rows)
+    })
+    .await
+    .map_err(|_| "Não foi possível abrir o terminal.")?
+}
+#[tauri::command]
+pub fn pty_write(id: u32, data: String, state: State<'_, AppState>) -> AppResult<()> {
+    state.ptys.write(id, &data)
+}
+#[tauri::command]
+pub fn pty_resize(id: u32, cols: u16, rows: u16, state: State<'_, AppState>) -> AppResult<()> {
+    state.ptys.resize(id, cols, rows)
+}
+#[tauri::command]
+pub fn pty_close(id: u32, state: State<'_, AppState>) {
+    state.ptys.close(id);
 }
 
 #[tauri::command]

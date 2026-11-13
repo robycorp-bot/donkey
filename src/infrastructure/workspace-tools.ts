@@ -1,6 +1,8 @@
 import { invoke, isTauri } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import type { Workspace } from '../domain/models';
 import type {
+  PtyShell,
   CatalogModel,
   GitAction,
   GitState,
@@ -27,6 +29,14 @@ export const tools = {
   stop: () => native<void>('project_stop'),
   gitDiff: (path: string, staged: boolean) => native<string>('git_diff', { path, staged }),
   terminal: (command: string) => native<TerminalResult>('run_terminal', { command }),
+  ptyOpen: (shell: PtyShell, cols: number, rows: number) => native<number>('pty_open', { shell, cols, rows }),
+  ptyWrite: (id: number, data: string) => native<void>('pty_write', { id, data }),
+  ptyResize: (id: number, cols: number, rows: number) => native<void>('pty_resize', { id, cols, rows }),
+  ptyClose: (id: number) => native<void>('pty_close', { id }),
+  onPtyOutput: (handler: (id: number, data: string) => void): Promise<UnlistenFn> =>
+    listen<{ id: number; data: string }>('pty-output', (event) => handler(event.payload.id, event.payload.data)),
+  onPtyExit: (handler: (id: number) => void): Promise<UnlistenFn> =>
+    listen<{ id: number }>('pty-exit', (event) => handler(event.payload.id)),
   catalog: () => native<CatalogModel[]>('model_catalog'),
   liveReload: () => native<void>('live_reload'),
   openBrowser: (url: string) => native<void>('open_preview_browser', { url }),

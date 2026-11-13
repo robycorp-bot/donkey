@@ -4,6 +4,10 @@ O projeto usa versões `MAJOR.MINOR.PATCH`. Durante `0.x`, os contratos e format
 
 ## Não lançado
 
+- Terminal interativo de verdade (PTY + xterm.js): PowerShell, PowerShell 7, Prompt de Comando, Git Bash e WSL, com cores, histórico e CLIs interativos (claude, codex, ollama, npm init...). Só shells de uma lista fixa podem ser iniciados. O executor de um comando por vez continua apenas no modo navegador.
+- Squad de agentes: o mediador monta o squad (modelo gratuito, com fallback por palavras-chave), o preview em Markdown pode ser editado e aprovado, e "Executar squad" roda os agentes aprovados em sequência.
+- Marca única (quatro nós nas cores Google) no ícone do app, do instalador, do favicon e da interface. Conversa sem nomes de empresa: abas só com marca e tooltip, respostas com a marca do app.
+
 - Visual redesenhado no estilo Google (Material): tema escuro por padrão e claro por botão, barra lateral de ícones (Agentes, Arquivos, Git, Terminal), barra superior com busca de comandos e botão Executar, janela opaca (sem Mica) e controles de janela do Windows. Os gastos de IA saíram do centro da tela: ficam num painel que abre pela barra de status. Removidos o visual "terminal antigo", o burrinho e os textos de brincadeira dos menus.
 - Blend de agentes (aba Agentes → Blend): Arquiteto, Desenvolvedor e Revisor em sequência, cada um com seu provedor e modelo, com sugestão automática (local e gratuito para escrever, modelo forte para planejar e revisar) e modo "só gratuito" que bloqueia qualquer etapa paga. O custo de cada etapa entra no monitor de gastos.
 - Novos provedores: Google Gemini, Grok (xAI) e Ollama local (sem chave, sem custo, só em 127.0.0.1). Nomes simplificados: Gratuitos, OpenRouter, Codex, Claude.

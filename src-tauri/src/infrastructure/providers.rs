@@ -5,7 +5,7 @@ use serde_json::{json, Value};
 use std::time::Duration;
 
 const MAX_RESPONSE_BYTES: usize = 2 * 1024 * 1024;
-const INCOMPLETE_NOTICE: &str = "\n\n[Coder mega-brain: o provedor encerrou esta resposta antes de concluí-la. Peça para continuar antes de usar código incompleto.]";
+const INCOMPLETE_NOTICE: &str = "\n\n[Donkey: o provedor encerrou esta resposta antes de concluí-la. Peça para continuar antes de usar código incompleto.]";
 const INSTRUCTIONS: &str = "Você é um assistente de programação. Responda em português brasileiro por padrão, com um toque nordestino bem-humorado e respeitoso. Seja direto e tecnicamente preciso. Você recebe somente as mensagens enviadas neste chat; não afirme ter lido arquivos, executado comandos ou feito alterações no projeto.";
 
 pub struct ProviderClient {
@@ -20,7 +20,7 @@ impl ProviderClient {
             // Authorization must never follow a redirect to another host.
             .redirect(reqwest::redirect::Policy::none())
             .pool_max_idle_per_host(2)
-            .user_agent("Coder-mega-brain/0.1.0")
+            .user_agent("Donkey/0.2.0")
             .build()
             .map_err(|_| "Não foi possível preparar a conexão segura com os provedores.")?;
         Ok(Self { client })

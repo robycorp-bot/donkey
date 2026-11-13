@@ -1,4 +1,4 @@
-/* Coder mega-brain · design system (Material/Google style). Dark by default, light on demand. */
+/* Donkey · design system (Material/Google style). Dark by default, light on demand. */
 :root,
 :root[data-theme='dark'],
 .app-shell[data-theme='dark'] {
@@ -1902,3 +1902,26 @@ textarea.text-field {
     animation: none;
   }
 }
+
+.squad-preview {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid var(--border, #dadce0);
+  border-radius: 8px;
+  font: 12px/1.5 ui-monospace, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.squad-members { display: grid; gap: 6px; margin: 8px 0; }
+.squad-member { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.squad-member strong { min-width: 130px; }
+
+.pty-host { flex: 1; min-height: 0; padding: 4px 8px; background: var(--bg); overflow: hidden; }
+.pty-host .xterm { height: 100%; }
+.terminal-quick select { background: var(--surface-2); color: var(--text); border: 1px solid var(--border, #5f6368); border-radius: 6px; padding: 2px 6px; font: inherit; }
+
+.aic-providers button { padding: 0 9px; gap: 6px; }
+.aic-mark { width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; background: var(--surface-3); font-size: 11px; font-weight: 700; line-height: 1; }
+.aic-providers button.on .aic-mark { background: var(--primary); color: var(--primary-ink); }
+.aic-avatar.logo { background: transparent; }

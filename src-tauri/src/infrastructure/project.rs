@@ -67,7 +67,7 @@ pub fn bump_live() {
     LIVE_VERSION.fetch_add(1, Ordering::Relaxed);
 }
 
-const LIVE_SCRIPT: &str = "<script>/* Coder mega-brain live reload */(()=>{let v;setInterval(async()=>{try{const r=await fetch('/__cmb_live',{cache:'no-store'});const t=await r.text();if(v&&t!==v)location.reload();v=t}catch(e){}},600)})();</script>";
+const LIVE_SCRIPT: &str = "<script>/* Donkey live reload */(()=>{let v;setInterval(async()=>{try{const r=await fetch('/__cmb_live',{cache:'no-store'});const t=await r.text();if(v&&t!==v)location.reload();v=t}catch(e){}},600)})();</script>";
 
 fn append(logs: &Mutex<VecDeque<String>>, line: String) {
     if let Ok(mut entries) = logs.lock() {
