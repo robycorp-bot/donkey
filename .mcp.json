@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "donkey-harness": {
+      "command": "node",
+      "args": ["packages/mcp-harness/dist/server.mjs"],
+      "env": {}
+    }
+  }
+}

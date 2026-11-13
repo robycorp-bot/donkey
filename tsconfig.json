@@ -23,6 +23,7 @@
     "src/**/*.ts",
     "src/**/*.svelte",
     "vite.config.ts",
-    "packages/harness/src/**/*.ts"
+    "packages/harness/src/**/*.ts",
+    "packages/mcp-harness/src/**/*.ts"
   ]
 }

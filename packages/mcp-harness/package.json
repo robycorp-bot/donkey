@@ -1,0 +1,13 @@
+{
+  "name": "@donkey/mcp-harness",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Servidor MCP que expõe o Harness do Donkey a qualquer CLI de IA.",
+  "type": "module",
+  "bin": { "donkey-harness-mcp": "./dist/server.mjs" },
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  }
+}

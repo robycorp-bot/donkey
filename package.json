@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "setup": "npm install && npm install --prefix packages/harness",
+    "mcp:build": "vite build packages/mcp-harness",
+    "test:mcp": "vitest run --root packages/mcp-harness",
     "dev": "vite --host 127.0.0.1 --port 1420 --strictPort",
     "dev:app": "tauri dev",
     "dev:web": "vite --host 127.0.0.1 --port 1420 --strictPort",
@@ -21,7 +23,7 @@
     "install:app": "powershell -ExecutionPolicy Bypass -File scripts/reinstall.ps1 -SkipBuild",
     "desktop:reinstall": "npm run ship",
     "test:harness": "npm test --prefix packages/harness",
-    "verify": "npm run check && npm run test:coverage && npm run test:rust && npm run test:harness && npm run build && npm run test:e2e",
+    "verify": "npm run check && npm run test:coverage && npm run test:rust && npm run test:harness && npm run test:mcp && npm run mcp:build && npm run build && npm run test:e2e",
     "tauri": "tauri",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
