@@ -4,6 +4,7 @@ O projeto usa versões `MAJOR.MINOR.PATCH`. Durante `0.x`, os contratos e format
 
 ## Não lançado
 
+- Harness ligado ao chat (ADR-006): toda mensagem para um provedor Grau 33 passa pela auditoria antes do HTTP. Veredito diferente de `safe` abre "auditar solicitação" com os achados, o trecho redigido e as opções cancelar ou enviar a versão redigida — o original nunca é oferecido para envio. Ollama local segue fora da auditoria por ser perímetro local; no Blend e no Squad, achado interrompe a etapa (fail-closed).
 - Terminal interativo de verdade (PTY + xterm.js): PowerShell, PowerShell 7, Prompt de Comando, Git Bash e WSL, com cores, histórico e CLIs interativos (claude, codex, ollama, npm init...). Só shells de uma lista fixa podem ser iniciados. O executor de um comando por vez continua apenas no modo navegador.
 - Squad de agentes: o mediador monta o squad (modelo gratuito, com fallback por palavras-chave), o preview em Markdown pode ser editado e aprovado, e "Executar squad" roda os agentes aprovados em sequência.
 - Marca única (quatro nós nas cores Google) no ícone do app, do instalador, do favicon e da interface. Conversa sem nomes de empresa: abas só com marca e tooltip, respostas com a marca do app.
